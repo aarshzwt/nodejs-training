@@ -7,10 +7,17 @@ const server = http.createServer((req, res) => {
     // const url = req.url;
     const url = new URL(req.url, `http://${req.headers.host}`);
     const location = path.join(__dirname, "files");
-   
+
 
     if (url.pathname === '/list') {
         const location = path.join(__dirname, "files");
+
+        if (!fs.existsSync(location)) {
+            fs.mkdirSync(location);
+            console.log("Folder 'files' created.");
+        } else {
+            console.log("Folder 'files' already exists.");
+        }
 
         fs.readdir(location, (err, files) => {
             if (err) {
@@ -54,8 +61,8 @@ const server = http.createServer((req, res) => {
         });
 
     }
-    
-    else if(url.pathname === '/create' && req.method === 'GET'){
+
+    else if (url.pathname === '/create' && req.method === 'GET') {
         const fileName = url.searchParams.get('name');
         const fileContent = url.searchParams.get('content');
 
@@ -64,7 +71,7 @@ const server = http.createServer((req, res) => {
             return res.end('ERROR: filename & content query parameters both are required');
         }
 
-        if(!fileName.endsWith(".txt")){
+        if (!fileName.endsWith(".txt")) {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             return res.end('ERROR: write appropriate extension i.e. .txt');
         }
@@ -76,12 +83,12 @@ const server = http.createServer((req, res) => {
                 return res.end('Error creating the file');
             } else {
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
-                res.end(`File ${fileName} created successfully with content: "${fileContent}"`); 
+                res.end(`File ${fileName} created successfully with content: "${fileContent}"`);
             }
-          });
+        });
     }
 
-    else if(url.pathname === '/append' && req.method === 'GET'){
+    else if (url.pathname === '/append' && req.method === 'GET') {
         const fileName = url.searchParams.get('name');
         const fileContent = url.searchParams.get('content');
 
@@ -89,7 +96,7 @@ const server = http.createServer((req, res) => {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             return res.end('ERROR: filename & content query parameters both are required');
         }
-        if(!fileName.endsWith(".txt")){
+        if (!fileName.endsWith(".txt")) {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             return res.end('ERROR: write appropriate extension i.e. .txt');
         }
@@ -101,19 +108,19 @@ const server = http.createServer((req, res) => {
                 return res.end('Error appending the content in the file');
             } else {
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
-                res.end(''); 
+                res.end('');
             }
-          });
+        });
     }
 
-    else if(url.pathname === '/delete' && req.method === 'GET'){
+    else if (url.pathname === '/delete' && req.method === 'GET') {
         const fileName = url.searchParams.get('name');
 
         if (!fileName) {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             return res.end('ERROR: filename query parameters is required');
         }
-        if(!fileName.endsWith(".txt")){
+        if (!fileName.endsWith(".txt")) {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             return res.end('ERROR: write appropriate extension i.e. .txt');
         }
@@ -125,9 +132,9 @@ const server = http.createServer((req, res) => {
                 return res.end('Error deleting the file');
             } else {
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
-                res.end('Successfully Deleted the file'); 
+                res.end('Successfully Deleted the file');
             }
-          });
+        });
     }
 
     else {
