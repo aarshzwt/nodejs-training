@@ -1,5 +1,5 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '..', '..', '.env') });
+require('dotenv').config();
 
 console.log(`APP_NAME ${process.env.APP_NAME}`);
 console.log(`APP_ENV ${process.env.APP_ENV}`);
