@@ -6,12 +6,21 @@ let rl = readline.createInterface(process.stdin, process.stdout);
 
 function validateFileName(fileName) {
     const regex = /\.[a-zA-Z0-9]+$/;
+    const invalidChars = /[<>:"/\\|?*]/;
+    //HANDLES ANY INVALID CHARACTERS
+    if (invalidChars.test(fileName)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Invalid characters in filename' }));
+    }
+    //HANDLES EXTENSION
     if (regex.test(fileName)) {
+        //Reject any other extension other than .txt
         if (!fileName.endsWith(".txt")) {
             throw new Error("File Name supports only .txt format. Try again adding it or do not include extension at all.");
         }
         return fileName;
     }
+    //if no extension given by user, we add .txt from our side
     else {
         return fileName + ".txt";
     }
