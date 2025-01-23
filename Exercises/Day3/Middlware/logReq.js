@@ -12,8 +12,7 @@ const logReq = (req, res, next) => {
 
     fs.appendFile(filePath, `\n ${temp}`, err => {
         if (err) {
-            console.error(`Error appending the content to the file:${err}`);
-           
+            console.error(`Error appending the content to the file:${err}`);         
         }
         next();
     })
