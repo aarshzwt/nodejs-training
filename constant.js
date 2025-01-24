@@ -3,5 +3,7 @@ let users = [
     { id: 2, name: "Jane Smith", email: "jane@example.com", age: 25, role: "User", isActive: false }
   ];
 
-module.exports = users;
+const validRoles = ["admin", "user"];
+
+module.exports = {users, validRoles};
   

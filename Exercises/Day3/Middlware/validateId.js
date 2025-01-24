@@ -1,4 +1,4 @@
-const users = require("../constant")
+const users = require("../../../constant")
 
 const validateId = (req, res, next) => {
     const id = req?.params?.id;
