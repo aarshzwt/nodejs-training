@@ -43,14 +43,18 @@ function createUser(req,res){
     isActive = Boolean(isActive);
     // console.log(name, email, age, role, isActive);
 
-    if (!name || !email || !age || !role || !isActive) {
+    if (!name || !email || !age || !role || isActive === undefined) {
         res.status(403).json({error:"Each query params are required"});
+    }
+    const emailValidation = users.find((user) => user.email === email)
+    if(emailValidation){
+      res.status(400).json({message: `User already exists with this email Id: ${email}.`})
     }
     else { 
         const id = users.length + 1;
         const newUser = {id, name, email, age, role, isActive };
         users.push(newUser);
-        res.status(200).json({message:`New user Created with id: ${id}, name: ${name}, email: ${email}, age: ${age}, role: ${role}`});
+        res.status(201).json({message:`New user Created with id: ${id}, name: ${name}, email: ${email}, age: ${age}, role: ${role}`});
     }
 }
 
@@ -74,7 +78,7 @@ function updateUser(req,res){
             if (role) foundUser.email = email;
             if (isActive) foundUser.name = name;
 
-            res.status(200).json({message:`User Updated ${JSON.stringify(foundUser)}`});
+            res.status(201).json({message:`User Updated ${JSON.stringify(foundUser)}`});
         }
     }
 }
