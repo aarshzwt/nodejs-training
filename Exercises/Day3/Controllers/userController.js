@@ -1,7 +1,8 @@
-const { users, validRoles } = require("../../../constant")
 const multer = require('multer')
 const fs = require('fs');
 const path = require('path');
+const { users, validRoles } = require("../../../constant")
+const { emailValidator } = require("../validators/emailValidator");
 
 
 function welcome(req, res) {
@@ -48,16 +49,17 @@ function createUser(req, res) {
   // console.log(name, email, age, role, isActive);
 
   if (!name || !email || !age || !role || isActive === undefined) {
-    return res.status(403).json({ error: "Each query params are required" });
+    return res.status(403).json({ error: "All parameters (name, email, age, role, isActive) are required" });
   }
-  else if(!emailValidator){
+  else if (!emailValidator(email)){
     return res.status(400).json({error:`email not valid`});
   }
+
   const emailValidation = users.find((user) => user.email === email)
   if (emailValidation) {
     return res.status(400).json({ message: `User already exists with this email Id: ${email}.` })
   }
-  else if (!validRoles.includes(role.toLowerCase())) {
+  if (!validRoles.includes(role.toLowerCase())) {
     return res.status(400).json({ message: "Enter Valid Roles only i.e., Admin or User" })
   }
   else {
@@ -75,12 +77,18 @@ function createUser(req, res) {
 function updateUser(req, res) {
   const id = parseInt(req.params.id);
   if (!id) {
-    return res.status(403).json({ error: "Please enter user id to proceed." });
+    return res.status(403).json({ error: "User ID is required." });
   }
   let { name, email, age, role, isActive } = req?.body;
 
   if (!name && !email && !age && !role && isActive === undefined) {
     return res.status(403).json({ error: `Atleast 1 query param is required from these: "name", "email", "age", "role", "isActive". ` });
+  }
+  if(email){
+    const emailValidation = users.find((user) => user.email === email)
+    if (emailValidation) {
+      return res.status(400).json({ message: `Can not update User, email already exists: ${email}.` })
+    }
   }
   else {
     const foundUser = users.find((user) => user.id === id);
@@ -115,61 +123,30 @@ function deleteUser(req, res) {
   }
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "uploads");
-
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 2000000 },
-  fileFilter: function(_req, file, cb){
-    checkFileType(file, cb);
-}
-});
-
-function checkFileType(file, cb){
-  const filetypes = /jpeg|jpg|png/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if(mimetype && extname){
-    return cb(null, true);
-  } else {
-    return cb("Only Images are allowed (jpeg, jpg, png)");
-  }
-}
 
 function fileUpload(req,res){
+  const id = parseInt(req.params.id);
+
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
-  
+  // Validate user
+  const user = users.find((user) => user.id === id);
+  if (!user) {
+    return res.status(404).json({ error: `No user found with id: ${id}` });
+  }
+
+  // Save image URL to user's data
+  const imageUrl = `/uploads/${req.file.filename}`;
+  user.imageUrl = imageUrl;
+
   res.json({
     message: 'Image uploaded successfully',
-    file: req.file
+    file: imageUrl,
+    user
   });
+
 }
-// app.post('/upload-image', upload.single('file'), (req, res) => {
-//   if (!req.file) {
-//     return res.status(400).json({ error: 'No file uploaded' });
-//   }
-
-//   res.json({
-//     message: 'Image uploaded successfully',
-//     file: req.file
-//   });
-// });
-
 
 module.exports = {
   welcome,
@@ -178,6 +155,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
-  upload,
   fileUpload
 };

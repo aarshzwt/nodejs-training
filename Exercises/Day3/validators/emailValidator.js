@@ -9,4 +9,4 @@ function emailValidator(){
     }
 }
 
-module.export = {emailValidator}
+module.exports = {emailValidator}

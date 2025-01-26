@@ -1,21 +1,53 @@
-const express = require("express")
-const router = express.Router()
-const validateId = require("../Middlware/validateId")
-const mainController = require("../Controllers/mainController")
+const express = require("express");
+const multer = require("multer");
+const router = express.Router();
+const validateId = require("../Middlware/validateId");
 
-router.get('/', mainController.welcome)
+const {
+  welcome,
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+  fileUpload,
+} = require("../Controllers/userController");
+const { upload } = require("../Middlware/fileUpload");
 
-router.get('/users', mainController.getUsers)
+router.get("/", welcome);
 
-router.get('/users/:id', validateId, mainController.getUserById)
+router.get("/users", getUsers);
 
-router.post('/users', mainController.createUser)
+router.get("/users/:id", validateId, getUserById);
 
-router.patch('/users/:id', validateId, mainController.updateUser)
+router.post("/users", createUser);
 
-router.delete('/users/:id', validateId, mainController.deleteUser)
+router.patch("/users/:id", validateId, updateUser);
 
-router.post('/upload-image',mainController.upload.single('file'),  mainController.fileUpload)
+router.delete("/users/:id", validateId, deleteUser);
 
+router.post(
+  "/upload-image/:id",
+  upload.single("file"),
+  validateId,
+  (req, res, next) => {
+    if (req.fileValidationError) {
+      return res.status(400).json({ error: req.fileValidationError });
+    }
+    fileUpload(req, res);
+  }
+);
 
+router.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res
+        .status(400)
+        .json({ error: "File size exceeds the 2MB limit." });
+    }
+  } else if (err.message === "Only Images are allowed (jpeg, jpg, png)") {
+    return res.status(400).json({ error: err.message });
+  }
+  next(err);
+});
 module.exports = router;
