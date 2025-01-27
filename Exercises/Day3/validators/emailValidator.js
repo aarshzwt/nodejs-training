@@ -1,4 +1,4 @@
-function emailValidator(){
+function emailValidator(email){
 
     const emailRegex=/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if(!emailRegex.test(email)){
@@ -9,4 +9,4 @@ function emailValidator(){
     }
 }
 
-module.exports = {emailValidator}
+module.exports = emailValidator

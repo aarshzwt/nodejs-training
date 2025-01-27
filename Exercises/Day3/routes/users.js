@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const router = express.Router();
-const validateId = require("../Middlware/validateId");
+const validateId = require("../middlware/validateId");
 
 const {
   welcome,
@@ -11,8 +11,8 @@ const {
   updateUser,
   deleteUser,
   fileUpload,
-} = require("../Controllers/userController");
-const { upload } = require("../Middlware/fileUpload");
+} = require("../controllers/userController");
+const { upload } = require("../middlware/fileUpload");
 
 router.get("/", welcome);
 
@@ -26,10 +26,7 @@ router.patch("/users/:id", validateId, updateUser);
 
 router.delete("/users/:id", validateId, deleteUser);
 
-router.post(
-  "/upload-image/:id",
-  upload.single("file"),
-  validateId,
+router.post("/upload-image/:id", upload.single("file"), validateId,
   (req, res, next) => {
     if (req.fileValidationError) {
       return res.status(400).json({ error: req.fileValidationError });
