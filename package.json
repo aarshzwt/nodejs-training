@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate": "node exercises/day-3/db/migrationsRunner",
     "day3": "node ./Exercises/Day3/index.js"
   },
   "keywords": [],
