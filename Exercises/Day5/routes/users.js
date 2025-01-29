@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const userSchema = require("../database/schemas/userSchema")
 const validateId = require("../middlware/validateId");
-
+const userValidator = require("../validators/userValidator")
 const {
   welcome,
   getUsers,
@@ -20,7 +21,7 @@ router.get("/", welcome);
 
 router.get("/users", getUsers);
 router.get("/users/:id", validateId, getUserById);
-router.post("/users", createUser);
+router.post("/users", userValidator(userSchema), createUser);
 router.patch("/users/:id", validateId, updateUser);
 router.delete("/users/:id", validateId, deleteUser);
 
