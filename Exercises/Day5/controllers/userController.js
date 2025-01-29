@@ -1,55 +1,30 @@
 const fs = require('fs');
 const path = require('path');
-const { validRoles } = require("../../../constant")
-const emailValidator = require("../validators/emailValidator")
-const ageValidator = require("../validators/ageValidator")
-const roleValidator = require("../validators/roleValidator")
 const pool = require("../database/connection")
 
 function welcome(req, res) {
   return res.status(200).json({ message: "Welcome to the User Management API!" });
 }
 
+// GET "/users" controller function
 async function getUsers(req, res) {
-
-  // if (users) {
-    // let { age, role, isActive } = req?.query;
-
-    // let filteredUsers = users;
-    // if (role) {
-    //   filteredUsers = filteredUsers.filter((user) => user.role.toLowerCase() === role.toLowerCase());
-    // }
-    // if (isActive) {
-    //   filteredUsers = filteredUsers.filter((user) => String(user.isActive) === isActive);
-    // }
-    // if (age) {
-    //   filteredUsers = filteredUsers.filter((user) => user.age >= parseInt(age));
-    // }
-    // return res.status(200).json({ users: filteredUsers });
-  // }
-  // else {
-  //   return res.status(404).json({ message: "No users found." })
-  // }
-
-
   try {
     const result = await pool.query('SELECT * from users');
     const users = result[0];
     if (users.length !== 0) {
       let { ageGt, role, isActive } = req?.query;
 
-    let filteredUsers = users;
-    if (role) {
-      filteredUsers = filteredUsers.filter((user) => user.role === role);
-    }
-    if (isActive) {
-      filteredUsers = filteredUsers.filter((user) => String(user.isActive) === isActive);
-    }
-    if (ageGt) {
-      filteredUsers = filteredUsers.filter((user) => user.age > parseInt(ageGt));
-    }
-    return res.status(200).json({ users: filteredUsers });
-      // return res.status(200).json({ users: users });
+      let filteredUsers = users;
+      if (role) {
+        filteredUsers = filteredUsers.filter((user) => user.role === role);
+      }
+      if (isActive) {
+        filteredUsers = filteredUsers.filter((user) => String(user.isActive) === isActive);
+      }
+      if (ageGt) {
+        filteredUsers = filteredUsers.filter((user) => user.age > parseInt(ageGt));
+      }
+      return res.status(200).json({ users: filteredUsers });
     }
     else {
       return res.status(404).json({ message: "No users found." });
@@ -58,12 +33,13 @@ async function getUsers(req, res) {
     console.error(error);
   }
 }
-async function getUserById(req, res) {
 
+// GET "/users/:id" controller function
+async function getUserById(req, res) {
   try {
     const id = parseInt(req.params.id);
 
-    const query= ` SELECT 
+    const query = ` SELECT 
       u.id, u.name, u.email, u.age, u.role, u.isActive, p.bio, p.linkedInUrl, p.facebookUrl, p.instaUrl, i.imageName from users u LEFT JOIN user_profiles p ON u.id = p.userId
       LEFT JOIN user_images i ON u.id = i.userId
       WHERE u.id = ?;` ;
@@ -80,34 +56,12 @@ async function getUserById(req, res) {
   }
 }
 
+// PUT "/users" controller function
 async function createUser(req, res) {
   try {
-
     let { name, email, age, role, isActive } = req.body;
     isActive = Boolean(isActive);
 
-    if (!name || !email || !role || isActive === undefined) {
-      console.log("Missing parameters");
-      return res.status(403).json({ error: "All parameters (name, email, age, role, isActive) are required" });
-    }
-    if (age === undefined || age === null || age === '') {
-      console.log("Age not entered");
-      return res.status(400).json({ error: "Age not entered" });
-    }
-
-    else if (!ageValidator(age)) {
-      console.log("Invalid type of age");
-      return res.status(400).json({ error: `Age not valid, it must be Interger number` });
-    }
-
-    else if (!roleValidator(role)) {
-      return res.status(400).json({ error: `role must be from ["User", "Admin"]` });
-    }
-
-    else if (!emailValidator(email)) {
-      console.log("Invalid email");
-      return res.status(400).json({ error: `Email not valid` });
-    }
     const emailValidation = await pool.query(`SELECT * from users where email=?`, [email]);
     const foundUser = emailValidation[0];
     if (foundUser.length != 0) {
@@ -131,44 +85,22 @@ async function createUser(req, res) {
   }
 }
 
-
+// PATCH "/users/:id" controller function
 async function updateUser(req, res) {
   const id = parseInt(req.params.id);
-  if (!id) {
-    return res.status(403).json({ error: "User ID is required." });
-  }
   let { name, email, age, role, isActive } = req?.body;
 
   if (!name && !email && !age && !role && isActive === undefined) {
     return res.status(403).json({ error: `Atleast 1 query param is required from these: "name", "email", "age", "role", "isActive". ` });
   }
 
-  if (age) {
-    if (!ageValidator(age)) {
-      console.log("Invalid type of age");
-      return res.status(400).json({ error: `Age not valid, it must be Interger number` });
-    }
-  }
-
-  if (role) {
-     if (!roleValidator(role)) {
-      return res.status(400).json({ error: `role must be from ["User", "Admin"]` });
-    }
-  }
-
   if (email) {
-    if (!emailValidator(email)) {
-      console.log("Invalid email");
-      return res.status(400).json({ error: `Email not valid` });
-    } else {
-      const emailValidation = await pool.query(`SELECT * from users where email=?`, [email]);
-      const foundUser = emailValidation[0];
-      if (foundUser.length != 0) {
-        return res.status(400).json({ message: `Can not update User, email already exists: ${email}.` })
-      }
+    const emailValidation = await pool.query(`SELECT * from users where email=?`, [email]);
+    const foundUser = emailValidation[0];
+    if (foundUser.length != 0) {
+      return res.status(400).json({ message: `Can not update User, email already exists: ${email}.` })
     }
-  }
-  else {
+  } else {
     const result = await pool.query(`SELECT * from users where id=?`, [id]);
     const foundUser = result[0];
 
@@ -185,18 +117,16 @@ async function updateUser(req, res) {
           message: "User Updated Successfully",
           data: updatedUser[0]
         });
-      }
-      else {
+      } else {
         return res.status(500).json({ message: "Error updating the user." });
       }
-    }
-    else {
+    } else {
       return res.status(404).json({ message: `No user found with id: ${id}.` })
     }
-
   }
 }
 
+// DELETE "/users/:id" controller function
 async function deleteUser(req, res) {
   try {
     const id = parseInt(req.params.id);
@@ -220,16 +150,58 @@ async function deleteUser(req, res) {
   }
 }
 
+//POST "file-upload" controller function
+async function fileUpload(req, res) {
+  try {
+    const id = parseInt(req.params.id);
+    if (!id) {
+      return res.status(403).json({ error: "Please enter user id to proceed." });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const fileName = req.file.originalname;
+    const filePath = `/uploads/${req.file.fieldname}s/${req.file.filename}`; 
+    const mimeType = req.file.mimetype;
+    const extension = path.extname(req.file.originalname);
+    const size = req.file.size;
+
+    let query;
+    let parameters;
+
+    if (extension === ".pdf") {
+      const { name, email, age } = req.body;
+      query = "INSERT INTO user_pdfs (userId, name, email, age, pdfName, path, mimeType, extension) VALUES (?,?,?,?,?,?,?,?)";
+      parameters = [id, name, email, age, fileName, filePath, mimeType, extension, size];
+      await pool.query(query, parameters);
+      return res.json({
+        message: 'Pdf uploaded successfully',
+      });
+    }
+    query = "INSERT INTO user_images (userId, imageName, path, mimeType, extension, size) VALUES (?,?,?,?,?,?)";
+    parameters = [id, fileName, filePath, mimeType, extension, size];
+    await pool.query(query, parameters);
+    return res.json({
+      message: 'Image uploaded successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Database error: ' + error.message });
+  }
+
+}
 
 
+//USER_PROFILE SECTION
+
+// GET "/user-profile/:id" controller function
 async function getUserProfileById(req, res) {
-
   try {
     const id = parseInt(req.params.id);
 
     const result = await pool.query(`SELECT * from user_profiles where id=?`, [id]);
     const foundUser = result[0];
-    if (foundUser.length != 0) {
+    if (foundUser.length !== 0) {
       return res.status(200).json(foundUser);
     }
     else {
@@ -240,16 +212,17 @@ async function getUserProfileById(req, res) {
   }
 }
 
+// POST "/user-profile/:id" controller function
 async function createUserProfile(req, res) {
   try {
-    const userId = parseInt(req.params.id);
-    if (!userId) {
-      return res.status(403).json({ error: "User ID is required." });
-    }
-
+    const id = parseInt(req.params.id);
     let { bio, linkedInUrl, facebookUrl, instaUrl } = req.body;
 
-    const user = [userId, bio, linkedInUrl, facebookUrl, instaUrl];
+    const existingUserProfile = await pool.query(`SELECT * from user_profiles where userId=?`, [id]);
+    if (existingUserProfile[0].length !== 0) {
+      return res.status(200).json({ message: `user Profile already exists with id: ${id}.` })
+    }
+    const user = [id, bio, linkedInUrl, facebookUrl, instaUrl];
     console.log("Inserting user:", user);
     const [result] = await pool.execute(
       `INSERT INTO user_profiles (userId, bio, linkedInUrl, facebookUrl, instaUrl) VALUES (?,?,?,?,?)`,
@@ -267,58 +240,45 @@ async function createUserProfile(req, res) {
   }
 }
 
-
+// PUT "/user-profile/:id" controller function
 async function updateUserProfile(req, res) {
-  const userId = parseInt(req.params.id);
+  const id = parseInt(req.params.id);
   let { bio, linkedInUrl, facebookUrl, instaUrl } = req?.body;
-  if (!userId) {
-    return res.status(403).json({ error: "User ID is required." });
-  }
-  const result = await pool.query(`SELECT * from user_profiles where id=?`, [userId]);
-  const foundUser = result[0];
 
-  if (foundUser.length !== 0) {
-    
-    const query = "UPDATE user_profiles SET bio=?, linkedInUrl=?, facebookUrl=?, instaUrl=? WHERE userId = ?";
-    const parameters = [bio, linkedInUrl, facebookUrl, instaUrl, userId];
-
+  const foundUser = await pool.query(`SELECT * from user_profiles where id=?`, [id]);
+  if (foundUser[0].length !== 0) {
+    const query = "UPDATE user_profiles SET bio=?, linkedInUrl=?, facebookUrl=?, instaUrl=? WHERE id = ?";
+    const parameters = [bio, linkedInUrl, facebookUrl, instaUrl, id];
 
     const updateResult = await pool.query(query, parameters);
     console.log(updateResult[0]);
     if (updateResult[0].affectedRows > 0) {
-      const updatedUser = await pool.query(`SELECT * FROM user_profiles WHERE id=?`, [userId]);
+      const updatedUser = await pool.query(`SELECT * FROM user_profiles WHERE id=?`, [id]);
       return res.status(200).json({
         message: "User Updated Successfully",
         data: updatedUser[0]
       });
-    }
-    else {
+    } else {
       return res.status(500).json({ message: "Error updating the user." });
     }
-  }
-  else {
-    return res.status(404).json({ message: `No user found with id: ${userId}.` })
+  } else {
+    return res.status(404).json({ message: `No user found with id: ${id}.` })
   }
 
 }
 
-
+// DELETE "/user-profile/:id" controller function
 async function deleteUserProfile(req, res) {
   try {
-    const userId = parseInt(req.params.id);
-    if (!userId) {
-      return res.status(403).json({ error: "Please enter user id to proceed." });
+    const id = parseInt(req.params.id);
+
+    const foundUser = await pool.query(`SELECT * from user_profiles where id=?`, [id]);
+    if (foundUser[0].length !== 0) {
+      const result = await pool.execute(`DELETE FROM user_profiles WHERE id=?`, [id]);
+      return res.status(200).json({ message: "User Deleted Successfully" });
     }
     else {
-      const result = await pool.query(`SELECT * from user_profiles where id=?`, [userId]);
-      const foundUser = result[0];
-      if (foundUser.length != 0) {
-        const result = await pool.execute(`DELETE FROM user_profiles WHERE id=?`, [userId]);
-        return res.status(200).json({ message: "User Deleted Successfully" });
-      }
-      else {
-        return res.status(404).json({ message: `No user found with id: ${userId}.` })
-      }
+      return res.status(404).json({ message: `No user found with id: ${id}.` })
     }
   } catch (error) {
     console.error("Error in deleteUser:", error);
@@ -326,6 +286,7 @@ async function deleteUserProfile(req, res) {
   }
 }
 
+// DELETE "/user-images/:id" controller function
 async function deleteUserImages(req, res) {
   try {
     const userId = parseInt(req.params.userId);
@@ -357,6 +318,7 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  fileUpload,
   getUserProfileById,
   createUserProfile,
   updateUserProfile,

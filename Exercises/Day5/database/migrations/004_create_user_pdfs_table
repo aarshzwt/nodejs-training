@@ -1,7 +1,10 @@
-create table IF NOT EXISTS user_images(
+create table IF NOT EXISTS user_pdfs(
     id int NOT NULL AUTO_INCREMENT, 
     userId int,
-    imageName varchar(255),
+    name varchar(255),
+    email varchar(255),
+    age int,
+    pdfName varchar(255),
     path varchar(255),
     mimeType varchar(100),
     extension varchar(100),
