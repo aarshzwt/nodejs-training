@@ -21,7 +21,7 @@ const {
   deleteUserImages
 } = require("../controllers/userController");
 
-const {imageUpload, pdfUpload}  = require("../middlware/fileUpload");
+const {imageUpload, pdfUpload, handleMulterError}  = require("../middlware/fileUpload");
 
 
 router.get("/", welcome);
@@ -32,36 +32,10 @@ router.post("/users", userValidator(userCreateSchema), createUser);
 router.patch("/users/:id", userValidator(userUpdateSchema), updateUser);
 router.delete("/users/:id", validateId, deleteUser);
 
-router.post("/upload-image/:id", imageUpload, validateId,
-  (req, res, next) => {
-    if (req.fileValidationError) {
-      return res.status(400).json({ error: req.fileValidationError });
-    }
-    fileUpload(req, res);
-  }
-);
+router.post("/upload-image/:id", imageUpload, validateId,fileUpload, handleMulterError);
 
-router.post("/upload-pdf/:id", pdfUpload, validateId,
-  (req, res, next) => {
-    if (req.fileValidationError) {
-      return res.status(400).json({ error: req.fileValidationError });
-    }
-    fileUpload(req, res);
-  }
-)
+router.post("/upload-pdf/:id", pdfUpload, validateId,fileUpload, handleMulterError)
 
-router.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_SIZE") {
-      return res
-        .status(400)
-        .json({ error: "File size exceeds the 2MB limit." });
-    }
-  } else if (err.message === "Only Images are allowed (jpeg, jpg, png)") {
-    return res.status(400).json({ error: err.message });
-  }
-  next(err);
-});
 
 router.get("/user-profile/:id", validateId, getUserProfileById);
 router.post("/user-profile/:id", userValidator(userProfileSchema), createUserProfile);

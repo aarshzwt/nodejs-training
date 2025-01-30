@@ -150,7 +150,6 @@ async function deleteUser(req, res) {
   }
 }
 
-//POST "file-upload" controller function
 async function fileUpload(req, res) {
   try {
     const id = parseInt(req.params.id);
@@ -162,7 +161,7 @@ async function fileUpload(req, res) {
     }
 
     const fileName = req.file.originalname;
-    const filePath = `/uploads/${req.file.fieldname}s/${req.file.filename}`; 
+    const filePath = `/uploads/${req.file.fieldname}s/${req.file.filename}`;
     const mimeType = req.file.mimetype;
     const extension = path.extname(req.file.originalname);
     const size = req.file.size;
@@ -172,13 +171,14 @@ async function fileUpload(req, res) {
 
     if (extension === ".pdf") {
       const { name, email, age } = req.body;
-      query = "INSERT INTO user_pdfs (userId, name, email, age, pdfName, path, mimeType, extension) VALUES (?,?,?,?,?,?,?,?)";
+      query = "INSERT INTO user_pdfs (userId, name, email, age, pdfName, path, mimeType, extension, size) VALUES (?,?,?,?,?,?,?,?)";
       parameters = [id, name, email, age, fileName, filePath, mimeType, extension, size];
       await pool.query(query, parameters);
       return res.json({
         message: 'Pdf uploaded successfully',
       });
     }
+
     query = "INSERT INTO user_images (userId, imageName, path, mimeType, extension, size) VALUES (?,?,?,?,?,?)";
     parameters = [id, fileName, filePath, mimeType, extension, size];
     await pool.query(query, parameters);
@@ -186,9 +186,8 @@ async function fileUpload(req, res) {
       message: 'Image uploaded successfully',
     });
   } catch (error) {
-    return res.status(500).json({ error: 'Database error: ' + error.message });
+    return res.status(500).json({ error: error.message || 'Something went wrong!' });
   }
-
 }
 
 
