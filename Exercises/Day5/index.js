@@ -4,7 +4,7 @@ const path = require('path');
 const app = express()
 const port = 5000
 
-const logReq = require("./Middlware/logReq")
+const logReq = require("./middlware/logReq")
 const userRoutes = require("./routes/users");
 
 app.use(express.json());
