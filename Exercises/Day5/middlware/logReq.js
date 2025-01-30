@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const logReq = (req, res, next) => {
-    const filePath = path.join(__dirname, "requestLogs.txt");
+    const filePath = path.join(__dirname, "..", "requestLogs.txt");
 
     const { method, url } = req;
 
