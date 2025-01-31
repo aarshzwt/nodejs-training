@@ -7,7 +7,9 @@
     "migrate": "node ./Exercises/Day3/database/migrationRunner && ./Exercises/Day5/database/migrationRunner",
     "day3": "node ./Exercises/Day3/index.js",
     "day5": "node ./Exercises/Day5/index.js",
-    "day6": "node ./Exercises/Day6/index.js"
+    "day6": "node ./Exercises/Day6/index.js",
+    "day7": "node ./Exercises/Day7/index.js"
+
 
   },
   "keywords": [],
