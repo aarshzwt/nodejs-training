@@ -17,7 +17,7 @@ router.delete("/users/:id", validateId, deleteUser);
 router.post("/upload-image/:id", imageUpload, validateId, fileUpload, handleMulterError);
 
 router.get("/user-profile/:id", validateId, getUserProfileById);
-router.post("/user-profile/:id", userValidator(userProfileSchema), createUserProfile);
+router.post("/user-profile/:userId", userValidator(userProfileSchema), createUserProfile);
 router.put("/user-profile/:id", userValidator(userProfileSchema), updateUserProfile);
 router.delete("/user-profile/:id", validateId, deleteUserProfile);
 

@@ -32,7 +32,7 @@ const userProfileSchema = yup.object({
     instaUrl: yup.string().url().required("instaUrl is required"),
   }),
   params: yup.object({
-    id: yup.number().required("id is required").positive("id must be a positive integer"),
+    userId: yup.number().required("id is required").positive("id must be a positive integer"),
   }),
 });
 module.exports = { userCreateSchema, userUpdateSchema, userProfileSchema };

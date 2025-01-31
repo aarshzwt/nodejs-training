@@ -43,31 +43,45 @@ async function getUsers(req, res) {
 async function getUserById(req, res) {
   try {
     const id = parseInt(req.params.id);
+
     const user = await User.findOne({
-      where: {
-        id,
+      where: { id },
+      include: [
+        {
+          model: UserProfile, 
+          attributes: ['bio', 'linkedInUrl', 'facebookUrl', 'instaUrl'], 
+        },
+        {
+          model: UserImage, 
+          as: 'UserImages', 
+          attributes: ['imageName'],
+        },
+      ],
+    });
+
+   
+    if (!user) {
+      return res.status(404).json({ message: `No user found with id: ${id}.` });
+    }
+
+    return res.status(200).json({ 
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        age: user.age,
+        role: user.role,
+        isActive: user.isActive,
+        profile: user.UserProfile, 
+        image: user.UserImages,
       },
     });
-    if (!user) {
-      return res.status(404).json({ message: `No user found with id: ${id}.` })
-    }
-    return res.status(200).json({ user: user });
-    // const query = ` SELECT 
-    //   u.id, u.name, u.email, u.age, u.role, u.isActive, p.bio, p.linkedInUrl, p.facebookUrl, p.instaUrl, i.imageName from users u LEFT JOIN user_profiles p ON u.id = p.userId
-    //   LEFT JOIN user_images i ON u.id = i.userId
-    //   WHERE u.id = ?;` ;
-    // const result = await pool.query(query, [id]);
-    // const foundUser = result[0];
-    // if (foundUser.length != 0) {
-    //   return res.status(200).json(foundUser);
-    // }
-    // else {
-    //   return res.status(404).json({ message: `No user found with id: ${id}.` })
-    // }
   } catch (error) {
     console.error(error);
+    return res.status(500).json({ message: "An error occurred while fetching the user." });
   }
 }
+
 
 // POST "/users" controller function
 async function createUser(req, res) {
@@ -178,8 +192,8 @@ async function getUserProfileById(req, res) {
         id,
       },
     });
-    if (user_profile.length === 0) {
-      return res.status(404).json({ message: `No user found with id: ${id}.` })
+    if (!user_profile) {
+      return res.status(404).json({ message: `No user profile found with id: ${id}.` })
     }
     return res.status(200).json({ user_profile: user_profile });
 
@@ -191,7 +205,7 @@ async function getUserProfileById(req, res) {
 // POST "/user-profile/:id" controller function
 async function createUserProfile(req, res) {
   try {
-    const userId = parseInt(req.params.id);
+    const userId = parseInt(req.params.userId);
    
     let { bio, linkedInUrl, facebookUrl, instaUrl } = req.body;
 
@@ -200,8 +214,16 @@ async function createUserProfile(req, res) {
         userId,
       },
     });
-    if (existingUserProfile.length !== 0) {
+    if (existingUserProfile) {
       return res.status(200).json({ message: `user Profile already exists with id: ${userId}.` })
+    }
+    const nonExistingUser = await User.findOne({
+      where:{
+        id:userId,
+      }
+    });
+    if (!nonExistingUser) {
+      return res.status(200).json({ message: `Can not create user Profile of non existent user.` })
     }
     const user_profile = await UserProfile.create({ userId, bio, linkedInUrl, facebookUrl, instaUrl });
     return res.status(200).json({ message: "User Profile created successfully", data: user_profile });
