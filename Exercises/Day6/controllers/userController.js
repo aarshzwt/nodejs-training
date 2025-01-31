@@ -12,31 +12,26 @@ function welcome(req, res) {
 async function getUsers(req, res) {
   try {
     const users = await User.findAll();
-    if (!users) {
+    if (users.length === 0) {
       return res.status(404).json({ message: "No users found." });
     }
-    return res.status(200).json({ users: users });
-    // if (users.length !== 0) {
-    //   let { ageGt, role, isActive } = req?.query;
+    let { ageGt, role, isActive } = req?.query;
 
-    //   let filteredUsers = users;
-    //   if (role) {
-    //     filteredUsers = filteredUsers.filter((user) => user.role === role);
-    //   }
-    //   if (isActive) {
-    //     filteredUsers = filteredUsers.filter((user) => String(user.isActive) === isActive);
-    //   }
-    //   if (ageGt) {
-    //     filteredUsers = filteredUsers.filter((user) => user.age > parseInt(ageGt));
-    //   }
-    //   return res.status(200).json({ users: filteredUsers });
-    // }
-    // else {
-    //   return res.status(404).json({ message: "No users found." });
-    // }
-  } catch (error) {
-    console.error(error);
+    let filteredUsers = users;
+    if (role) {
+      filteredUsers = filteredUsers.filter((user) => user.role === role);
+    }
+    if (isActive) {
+      filteredUsers = filteredUsers.filter((user) => String(user.isActive) === isActive);
+    }
+    if (ageGt) {
+      filteredUsers = filteredUsers.filter((user) => user.age > parseInt(ageGt));
+    }
+    return res.status(200).json({ users: filteredUsers });
   }
+  catch (error) {
+  console.error(error);
+}
 }
 
 // GET "/users/:id" controller function
@@ -48,23 +43,23 @@ async function getUserById(req, res) {
       where: { id },
       include: [
         {
-          model: UserProfile, 
-          attributes: ['bio', 'linkedInUrl', 'facebookUrl', 'instaUrl'], 
+          model: UserProfile,
+          attributes: ['bio', 'linkedInUrl', 'facebookUrl', 'instaUrl'],
         },
         {
-          model: UserImage, 
-          as: 'UserImages', 
-          attributes: ['imageName'],
+          model: UserImage,
+          as: 'UserImages',
+          attributes: ['imageName', 'path', 'mimeType', 'extension', 'size'],
         },
       ],
     });
 
-   
+
     if (!user) {
       return res.status(404).json({ message: `No user found with id: ${id}.` });
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       user: {
         id: user.id,
         name: user.name,
@@ -72,8 +67,8 @@ async function getUserById(req, res) {
         age: user.age,
         role: user.role,
         isActive: user.isActive,
-        profile: user.UserProfile, 
-        image: user.UserImages,
+        profile: user.UserProfile,
+        images: user.UserImages,
       },
     });
   } catch (error) {
@@ -94,7 +89,7 @@ async function createUser(req, res) {
   catch (error) {
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({
-        message: `Email address ${error} already exists. Please choose a different email.`,
+        message: `Email address already exists. Please choose a different email.`,
       });
     }
     return res.status(500).json({ error: error });
@@ -145,7 +140,7 @@ async function updateUser(req, res) {
 async function deleteUser(req, res) {
   try {
     const id = parseInt(req.params.id);
-  
+
     const user = await User.findOne({ where: { id } });
     if (!user) {
       return res.status(404).json({ message: `No user found with id: ${id}.` })
@@ -160,12 +155,19 @@ async function deleteUser(req, res) {
 
 async function fileUpload(req, res) {
   try {
-    const userId = parseInt(req.params.id);
-   
+    const userId = parseInt(req.params.userId);
+
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-
+    const nonExistingUser = await User.findOne({
+      where: {
+        id: userId,
+      }
+    });
+    if (!nonExistingUser) {
+      return res.status(400).json({ message: `Can not upload images of non existent user.` })
+    }
     const imageName = req.file.originalname;
     const filePath = `/uploads/${req.file.filename}`;
     const mimeType = req.file.mimetype;
@@ -186,7 +188,7 @@ async function fileUpload(req, res) {
 async function getUserProfileById(req, res) {
   try {
     const id = parseInt(req.params.id);
-   
+
     const user_profile = await UserProfile.findOne({
       where: {
         id,
@@ -206,7 +208,7 @@ async function getUserProfileById(req, res) {
 async function createUserProfile(req, res) {
   try {
     const userId = parseInt(req.params.userId);
-   
+
     let { bio, linkedInUrl, facebookUrl, instaUrl } = req.body;
 
     const existingUserProfile = await UserProfile.findOne({
@@ -215,15 +217,15 @@ async function createUserProfile(req, res) {
       },
     });
     if (existingUserProfile) {
-      return res.status(200).json({ message: `user Profile already exists with id: ${userId}.` })
+      return res.status(400).json({ message: `user Profile already exists with id: ${userId}.` })
     }
     const nonExistingUser = await User.findOne({
-      where:{
-        id:userId,
+      where: {
+        id: userId,
       }
     });
     if (!nonExistingUser) {
-      return res.status(200).json({ message: `Can not create user Profile of non existent user.` })
+      return res.status(400).json({ message: `Can not create user Profile of non existent user.` })
     }
     const user_profile = await UserProfile.create({ userId, bio, linkedInUrl, facebookUrl, instaUrl });
     return res.status(200).json({ message: "User Profile created successfully", data: user_profile });
@@ -237,7 +239,7 @@ async function createUserProfile(req, res) {
 async function updateUserProfile(req, res) {
   try {
     const id = parseInt(req.params.id);
-  
+
     const updateData = req.body;
 
     const existingUserProfile = await UserProfile.findOne({ where: { id } });
