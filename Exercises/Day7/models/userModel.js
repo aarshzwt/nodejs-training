@@ -39,13 +39,11 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: true,  // Adds createdAt and updatedAt automatically
         tableName: 'users',
         hooks: {
-            // Hash password before creating a user
             beforeCreate: async (user, options) => {
                 if (user.password) {
                     user.password = await bcrypt.hash(user.password, 13);
                 }
             },
-            // Hash password before updating a user (if password field is updated)
             beforeUpdate: async (user, options) => {
                 if (user.changed('password')) {
                     user.password = await bcrypt.hash(user.password, 13);

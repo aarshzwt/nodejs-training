@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path')
-const bcrypt = require('bcrypt')
 const db = require("../models")
 const { User, UserProfile, UserImage } = db
 
@@ -17,18 +16,42 @@ async function getUsers(req, res) {
       return res.status(404).json({ message: "No users found." });
     }
     let { ageGt, role, isActive } = req?.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-    let filteredUsers = users;
+    const offset = (page - 1) * limit;
+
+    const filters = {};
     if (role) {
-      filteredUsers = filteredUsers.filter((user) => user.role === role);
+      filters.role = role;
     }
     if (isActive) {
-      filteredUsers = filteredUsers.filter((user) => String(user.isActive) === isActive);
+      filters.isActive = isActive === 'true';
     }
     if (ageGt) {
-      filteredUsers = filteredUsers.filter((user) => user.age > parseInt(ageGt));
+      filters.age = { [Sequelize.Op.gt]: parseInt(ageGt, 10) };
     }
-    return res.status(200).json({ users: filteredUsers });
+
+    const { rows, count } = await User.findAndCountAll({
+      where: filters,
+      limit: limit,
+      offset: offset,
+    });
+    if (count === 0) {
+      return res.status(404).json({ message: "No users found." });
+    }
+
+    const totalPages = Math.ceil(count / limit);
+
+    return res.status(200).json({
+      users: rows,
+      pagination: {
+        totalItems: count,
+        totalPages,
+        currentPage: page,
+        pageSize: limit,
+      },
+    });
   }
   catch (error) {
     console.error(error);
@@ -84,8 +107,8 @@ async function createUser(req, res) {
   try {
     let { name, email, password, age, role, isActive } = req.body;
     isActive = Boolean(isActive);
-    let hashPassword = await bcrypt.hash(password, 13);
-    const user = await User.create({ name, email, password: hashPassword, age, role, isActive });
+   
+    const user = await User.create({ name, email, password, age, role, isActive });
     return res.status(200).json({ message: "User created successfully", data: user });
   }
   catch (error) {
@@ -107,7 +130,7 @@ async function updateUser(req, res) {
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({
-        error: `At least one field (e.g., "name", "email", "age", "role", "isActive") is required to update.`,
+        error: `At least one field (e.g., "name", "email", "password", "age", "role", "isActive") is required to update.`,
       });
     }
     const user = await User.findOne({ where: { id } });
@@ -197,7 +220,7 @@ async function userLogin(req, res) {
     if(!user){
       return res.status(404).json({ message: " User doesn't exists with this email"})
     }
-    const isValid = await bcrypt.compare(password, user.password)
+    const isValid = await user.comparePassword(password);
     if(!isValid){
       return res.status(400).json({ message: "Please enter the correct password"})
     }
