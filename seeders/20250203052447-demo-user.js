@@ -1,5 +1,6 @@
 'use strict';
 const { faker } = require('@faker-js/faker'); 
+const { User } = require('../Exercises/Day7/models');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -21,13 +22,13 @@ module.exports = {
         email: faker.internet.email(),
         password: faker.internet.password(), 
         age: faker.number.int({ min: 5, max: 100 }),
-        role: faker.helpers.arrayElement(['admin', 'user']),
+        role: faker.helpers.arrayElement(['Admin', 'User']),
         isActive: faker.datatype.boolean(),
         createdAt: new Date(),
         updatedAt: new Date(),
       });
    }
-   await queryInterface.bulkInsert('Users',dummyJSON,{});
+   await User.bulkCreate(dummyJSON, { individualHooks: true });
   },
 
   async down (queryInterface, Sequelize) {
