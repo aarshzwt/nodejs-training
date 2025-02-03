@@ -1,5 +1,8 @@
 const fs = require('fs');
 const path = require('path')
+const jwt = require('jsonwebtoken')
+require('dotenv').config();
+
 const db = require("../models")
 const { User, UserProfile, UserImage } = db
 
@@ -224,10 +227,18 @@ async function userLogin(req, res) {
       return res.status(404).json({ message: " User doesn't exists with this email"})
     }
     const isValid = await user.comparePassword(password);
+    
     if(!isValid){
       return res.status(400).json({ message: "Please enter the correct password"})
     }
-    return res.status(200).json({ message: "Login Successfull."})
+    const payload = {
+      userId: user.id,
+      email: user.email
+    };
+    
+    const accessToken= jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+    return res.status(200).json({ message: "Login Successfull.", accessToken: accessToken
+    })
 
   } catch (error) {
     return res.status(500).json({ error: error })
