@@ -15,11 +15,13 @@ async function getUsers(req, res) {
     if (users.length === 0) {
       return res.status(404).json({ message: "No users found." });
     }
+
     let { ageGt, role, isActive } = req?.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-
     const offset = (page - 1) * limit;
+    const order= req?.query.order || 'ASC';
+    const col = req?.query.col || 'createdAt';
 
     const filters = {};
     if (role) {
@@ -29,13 +31,14 @@ async function getUsers(req, res) {
       filters.isActive = isActive === 'true';
     }
     if (ageGt) {
-      filters.age = { [Sequelize.Op.gt]: parseInt(ageGt, 10) };
+      filters.age = { [db.Sequelize.Op.gt]: parseInt(ageGt, 10) };
     }
 
     const { rows, count } = await User.findAndCountAll({
       where: filters,
       limit: limit,
       offset: offset,
+      order: [[col, order]]
     });
     if (count === 0) {
       return res.status(404).json({ message: "No users found." });

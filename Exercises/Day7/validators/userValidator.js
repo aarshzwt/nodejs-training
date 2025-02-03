@@ -3,6 +3,7 @@ const userValidator = (schema) => async (req, res, next) => {
         await schema.validate({
             body: req.body,
             params: req.params,
+            query:req.query,
         }, { abortEarly: false });
 
         return next();

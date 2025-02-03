@@ -1,5 +1,19 @@
 const yup = require("yup");
 
+
+const userGetSchema = yup.object({
+  query: yup.object({
+    order: yup.string().oneOf(["ASC", "DESC"], 'order must be from ["ASC", "DESC"]').optional(),
+    col: yup.string().oneOf(["name", "email", "age", "isActive", "createdAt"], 'column name must be from ["name", "email", "age", "isActive", "createdAt"]').optional(),
+  })
+})
+
+const userGetByIdSchema = yup.object({
+  params: yup.object({
+    id: yup.number().required("id is required").positive("id must be a positive integer") 
+  })
+})
+
 const userCreateSchema = yup.object({
   body: yup.object({
     name: yup.string().required("name is required"),
@@ -44,4 +58,4 @@ const userProfileSchema = yup.object({
     userId: yup.number().required("id is required").positive("id must be a positive integer"),
   }),
 });
-module.exports = { userCreateSchema, userLoginSchema, userUpdateSchema, userProfileSchema };
+module.exports = { userGetSchema, userGetByIdSchema, userCreateSchema, userLoginSchema, userUpdateSchema, userProfileSchema };
