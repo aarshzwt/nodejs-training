@@ -3,6 +3,9 @@ require('dotenv').config();
 
 function authenticateToken(req,res,next){
     const authHeader = req.headers['authorization']
+    if(!authHeader){
+        return res.status(401).json({ message: 'no token provided'});
+    }
     console.log(authHeader)
     const token = authHeader.split(' ')[1]
 
