@@ -5,6 +5,7 @@ module.exports = {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.SEQUELIZE_DATABASE,
+    // database: process.env.ECOM_DATABASE,
     host: process.env.MYSQL_HOST,
     dialect: 'mysql',
   },

@@ -15,7 +15,7 @@ router.get("/users/:id", validateId, userValidator(userGetByIdSchema), authentic
 router.get("/user-profile/:id", validateId, authenticateToken,  getUserProfileById);
 
 //sign-up Route(same as post user route), post routes:
-router.post("/users", userValidator(userCreateSchema), authenticateToken,  createUser);
+router.post("/signup", userValidator(userCreateSchema),  createUser);
 
 router.post("/user-profile/:userId", validateId, userValidator(userProfileSchema), authenticateToken,  createUserProfile);
 router.post("/upload-image/:userId", imageUpload, validateId, authenticateToken,  fileUpload, handleMulterError);
@@ -30,7 +30,7 @@ router.delete("/user-profile/:id", validateId, authenticateToken,  deleteUserPro
 router.delete("/user-images/:userId", validateId, authenticateToken,  deleteUserImages);
 
 //login-route:
-router.post("/login", userValidator(userLoginSchema), authenticateToken,  userLogin);
+router.post("/login", userValidator(userLoginSchema),  userLogin);
 
 
 
