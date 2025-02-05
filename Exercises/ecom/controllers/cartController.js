@@ -51,8 +51,7 @@ async function addItemToCart(req, res) {
             return res.status(404).json({ message: `no product exists with id ${product_id}` })
         }
         if(existingProduct.stock < quantity){
-            return res.status(400).json({ message: `not enough product stock available` })
-
+            return res.status(400).json({ message: `not enough product stock available`, availableStock:  existingProduct.stock})
         }
         const cartItem = await Cart.create({ user_id, product_id, quantity })
         return res.status(200).json({ message: "Product has been added to the cart", cartItem: cartItem })
