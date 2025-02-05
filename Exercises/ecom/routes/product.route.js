@@ -12,8 +12,8 @@ const { productCreateSchema, productUpdateSchema } = require("../validationSchem
 router.get("/", getProducts);
 router.get("/:id", getProductById);
 
-router.post("/", validator(productCreateSchema),imageUpload, authorizeRole(['admin']), handleMulterError, createProduct);
-router.patch("/:id", validator(productUpdateSchema),imageUpload, authorizeRole(['admin']), handleMulterError, updateProduct);
+router.post("/", imageUpload, handleMulterError, validator(productCreateSchema), authorizeRole(['admin']),  createProduct);
+router.patch("/:id", imageUpload, handleMulterError, validator(productUpdateSchema), authorizeRole(['admin']), updateProduct);
 
 router.delete("/:id", authorizeRole(['admin']), deleteProduct)
 
