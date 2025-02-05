@@ -5,6 +5,9 @@ const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
 const categoryRoutes = require('./routes/category.route')
 const productRoutes = require('./routes/product.route')
+const cartRoutes = require('./routes/cart.route')
+const wishlistRoutes = require('./routes/wishlist.route')
+const orderRoutes = require('./routes/order.route')
 
 const logReq = require('./middleware/logReq');
 
@@ -21,6 +24,11 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes)
+app.use("/api/cart", cartRoutes)
+app.use("/api/wishlist", wishlistRoutes)
+app.use("/api/orders", orderRoutes)
+
+
 
 
 

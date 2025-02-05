@@ -18,6 +18,11 @@ async function getCategories(req, res) {
 async function createCategory(req, res) {
     try {
         const name = req.body.name;
+        if(!name){
+            return res.status(400).json({
+                message: `name is required`,
+              });
+        }
         const category = await Category.create({ name });
         return res.status(200).json({ category: category });
     } catch (error) {

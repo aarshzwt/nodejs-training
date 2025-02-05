@@ -1,4 +1,4 @@
-const userValidator = (schema) => async (req, res, next) => {
+const validator = (schema) => async (req, res, next) => {
     try {
         await schema.validate({
             body: req.body,
@@ -16,4 +16,4 @@ const userValidator = (schema) => async (req, res, next) => {
     }
 };
 
-module.exports = userValidator;
+module.exports = validator;

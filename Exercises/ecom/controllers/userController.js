@@ -37,8 +37,14 @@ async function updateUserProfile(req, res) {
     try {
         const id = req.id;
         const updateData = req.body;
+
+        if(updateData.length === 0){
+            return res.status(400).json({
+                message: "Atleast one param is required from [first_name, last_name, email, password].",
+            });
+        }
         
-        // Check if 'role' is present in the request body and return an error if found
+        // Check if 'role' is present in the request body and return error if found
         if (updateData.role) {
             return res.status(400).json({
                 message: "Cannot update role.",

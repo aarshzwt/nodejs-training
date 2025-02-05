@@ -68,19 +68,19 @@ module.exports = (sequelize, DataTypes) => {
     User.associate = (models) => {
         // User has one Cart (one-to-one)
         User.hasOne(models.Cart, {
-            foreignKey: 'userId',
+            foreignKey: 'user_id',
             onDelete: 'CASCADE',
         });
 
         // User has one Wishlist (one-to-one)
         User.hasOne(models.Wishlist, {
-            foreignKey: 'userId',
+            foreignKey: 'user_id',
             onDelete: 'CASCADE',
         });
 
         // User has many Order (one-to-many)
         User.hasMany(models.Order, {
-            foreignKey: 'userId',
+            foreignKey: 'user_id',
             onDelete: 'CASCADE',
         });
     };

@@ -1,0 +1,75 @@
+const db = require("../models")
+const { Wishlist, Product } = db
+
+async function getWishlistItems(req, res) {
+    try {
+        const user_id = req.id;
+
+        const wishlistItems = await Wishlist.findAll({
+            where: { user_id },
+            include: [
+                {
+                    model: Product,
+                    attributes: ['id', 'name', 'price', 'stock'],
+                },
+            ],
+        });
+
+
+        if (!wishlistItems || wishlistItems.length === 0) {
+            return res.status(404).json({ message: `No items found in wishlist for user id: ${user_id}.` });
+        }
+        const formattedWishlistItems = wishlistItems.map(item => ({
+            id: item.id,
+            user_id: item.user_id,
+            product: {
+                id: item.Product.id,
+                name: item.Product.name,
+                price: item.Product.price,
+                stock: item.Product.stock,
+            }
+        }));
+        return res.status(200).json({
+            wishlistItems: formattedWishlistItems,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Error fetching Wishlist Items", error: error })
+    }
+
+}
+
+async function addItemToWishlist(req, res) {
+    try {
+        const user_id = req.id;
+        const { product_id } = req.body;
+
+        const existingProduct = await Product.findOne({ where: { id: product_id } })
+        if (!existingProduct) {
+            return res.status(404).json({ message: `no product exists with id ${product_id}` })
+        }
+        const wishlistItem = await Wishlist.create({ user_id, product_id })
+        return res.status(200).json({ message: "Product has been added to the Wishlist", wishlistItem: wishlistItem })
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Error adding item to the wishlist", error: error })
+    }
+}
+
+async function deleteWishlistItem(req, res) {
+    try {
+        const id = req.params.id;
+        const wishlistItem = await Wishlist.findOne({ where: { id } });
+        if (!wishlistItem) {
+            return res.status(404).json({ message: `No wishlist item found with id: ${id}.` })
+        }
+        await Wishlist.destroy({ where: { id } });
+        return res.status(200).json({ message: "Wishlist Item deleted Successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Error deleting Wishlist Item", error: error })
+    }
+}
+
+module.exports = { getWishlistItems, addItemToWishlist, deleteWishlistItem }

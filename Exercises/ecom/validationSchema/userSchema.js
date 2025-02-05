@@ -8,11 +8,6 @@ const yup = require("yup");
 //   })
 // })
 
-// const userGetByIdSchema = yup.object({
-//   params: yup.object({
-//     id: yup.number().required("id is required").positive("id must be a positive integer") 
-//   })
-// })
 
 const userCreateSchema = yup.object({
   body: yup.object({
@@ -24,37 +19,21 @@ const userCreateSchema = yup.object({
   }),
 });
 
-// const userLoginSchema = yup.object({
-//   body: yup.object({
-//     email: yup.string().email().required("email is required"),
-//     password: yup.string().required("password is required"),
-//   }),
-// });
-
-// const userUpdateSchema = yup.object({
-//   body: yup.object({
-//     name: yup.string().optional(),
-//     email: yup.string().email().optional(),
-//     password: yup.string().optional(),
-//     age: yup.number().optional().min(5).max(120),
-//     role: yup.string().oneOf(["User", "Admin"], 'role must be from ["User", "Admin"]').optional(),
-//     isActive: yup.string().optional(),
-//   }),
-//   params: yup.object({
-//     id: yup.number().required("id is required").positive("id must be a positive integer"),
-//   }),
-// });
+const userLoginSchema = yup.object({
+  body: yup.object({
+    email: yup.string().email().required("email is required"),
+    password: yup.string().required("password is required"),
+  }),
+});
 
 
-// const userProfileSchema = yup.object({
-//   body: yup.object({
-//     bio: yup.string().required("bio is required"),
-//     linkedInUrl: yup.string().url().required("linkedInUrl is required"),
-//     facebookUrl: yup.string().url().required("facebookUrl is required"),
-//     instaUrl: yup.string().url().required("instaUrl is required"),
-//   }),
-//   params: yup.object({
-//     userId: yup.number().required("id is required").positive("id must be a positive integer"),
-//   }),
-// });
-module.exports = { userCreateSchema };
+const userUpdateSchema = yup.object({
+  body: yup.object({
+    first_name: yup.string().required("first_name is required"),
+    last_name: yup.string().required("last_name is required"),
+    email: yup.string().email().required("email is required"),
+    password: yup.string().optional(),
+  }),
+});
+
+module.exports = { userCreateSchema, userLoginSchema, userUpdateSchema };
