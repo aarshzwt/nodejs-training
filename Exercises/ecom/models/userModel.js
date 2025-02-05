@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt')
 
-// userModel.js
 module.exports = (sequelize, DataTypes) => {
     const User = sequelize.define('User', {
         id: {
@@ -32,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             default: "customer",
         },
-       
+
     }, {
         timestamps: true,  // Adds createdAt and updatedAt automatically
         tableName: 'users',
@@ -47,6 +46,18 @@ module.exports = (sequelize, DataTypes) => {
                     user.password = await bcrypt.hash(user.password, 13);
                 }
             }
+        },
+        //default scope that ignores the password col for security purpose
+        defaultScope: {
+            attributes: {
+                exclude: ['password']
+            }
+        },
+        scopes: {
+            //withPassword scope, if ever needed 
+            withPassword: {
+                attributes: { include: ['password'] }, 
+            }
         }
     });
 
@@ -55,14 +66,20 @@ module.exports = (sequelize, DataTypes) => {
         return bcrypt.compare(password, this.password);
     };
     User.associate = (models) => {
-        // User has one UserProfile (one-to-one)
-        User.hasOne(models.UserProfile, {
+        // User has one Cart (one-to-one)
+        User.hasOne(models.Cart, {
             foreignKey: 'userId',
             onDelete: 'CASCADE',
         });
 
-        // User has many UserImages (one-to-many)
-        User.hasMany(models.UserImage, {
+        // User has one Wishlist (one-to-one)
+        User.hasOne(models.Wishlist, {
+            foreignKey: 'userId',
+            onDelete: 'CASCADE',
+        });
+
+        // User has many Order (one-to-many)
+        User.hasMany(models.Order, {
             foreignKey: 'userId',
             onDelete: 'CASCADE',
         });

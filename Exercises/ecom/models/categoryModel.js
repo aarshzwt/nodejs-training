@@ -19,13 +19,13 @@ module.exports = (sequelize, DataTypes) => {
     });
 
 
-    Product.associate = (models) => {
-        // UserProfile belongs to a User (one-to-one)
-        // Product.belongsTo(models.User, {
-        //     foreignKey: 'category_id',
-        //     onDelete: 'CASCADE',
-        // });
+    Category.associate = (models) => {
+       // Category has Many Product (one-to-many)
+       Category.hasMany(models.Product, {
+        foreignKey: 'category_id',
+        onDelete: 'CASCADE',
+    });
     };
 
-    return User;
+    return Category;
 };

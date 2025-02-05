@@ -4,17 +4,17 @@ module.exports = {
   development: {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
-    database: process.env.SEQUELIZE_DATABASE,
-    host: process.env.MYSQL_HOST,
-    dialect: 'mysql',
-  },
-  ecom_development: {
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
     database: process.env.ECOM_DATABASE,
     host: process.env.MYSQL_HOST,
     dialect: 'mysql',
   },
+  // ecom_development: {
+  //   username: process.env.DB_USERNAME,
+  //   password: process.env.DB_PASSWORD,
+  //   database: process.env.ECOM_DATABASE,
+  //   host: process.env.MYSQL_HOST,
+  //   dialect: 'mysql',
+  // },
   test: {
     username: 'root',
     password: null,

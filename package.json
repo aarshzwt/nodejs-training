@@ -8,7 +8,10 @@
     "day3": "node ./Exercises/Day3/index.js",
     "day5": "node ./Exercises/Day5/index.js",
     "day6": "node ./Exercises/Day6/index.js",
-    "day7": "node ./Exercises/Day7/index.js"
+    "day7": "node ./Exercises/Day7/index.js",
+    "ecom": "node ./Exercises/ecom/index.js",
+    "ecom:migrate": "npx sequelize-cli db:migrate --migrations-path ./exercises/ecom/migrations",
+    "ecom:migrateUndo": "npx sequelize-cli db:migrate:undo:all --migrations-path ./exercises/ecom/migrations"
   },
   "keywords": [],
   "author": "",

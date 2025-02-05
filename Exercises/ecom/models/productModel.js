@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
         },
         price: {
-            type: DataTypes.DECIMAL(10,2),
+            type: DataTypes.DECIMAL(10, 2),
             allowNull: false,
         },
         stock: {
@@ -26,7 +26,6 @@ module.exports = (sequelize, DataTypes) => {
         category_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            unique: true,
             references: {
                 model: 'categories',
                 key: 'id',
@@ -43,12 +42,12 @@ module.exports = (sequelize, DataTypes) => {
 
 
     Product.associate = (models) => {
-        // Product belongs to a User (one-to-one)
+        // Product belongs to a Category (one-to-one)
         Product.belongsTo(models.Category, {
             foreignKey: 'category_id',
             onDelete: 'CASCADE',
         });
     };
 
-    return User;
+    return Product;
 };
