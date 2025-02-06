@@ -5,6 +5,11 @@ const { Wishlist, Product } = db
 async function getWishlistItems(req, res) {
     try {
         const user_id = req.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+
+        const totalProducts = await Wishlist.count();
 
         const wishlistItems = await Wishlist.findAll({
             where: { user_id },
@@ -14,12 +19,16 @@ async function getWishlistItems(req, res) {
                     attributes: ['id', 'name', 'price', 'stock', 'category_id'],
                 },
             ],
+            limit: limit,
+            offset: offset
         });
 
 
         if (!wishlistItems || wishlistItems.length === 0) {
             return res.status(404).json({ message: `No items found in wishlist for user id: ${user_id}.` });
         }
+        const totalPages = Math.ceil(totalProducts / limit);
+
         const formattedWishlistItems = wishlistItems.map(item => ({
             id: item.id,
             user_id: item.user_id,
@@ -34,6 +43,11 @@ async function getWishlistItems(req, res) {
         }));
         return res.status(200).json({
             wishlistItems: formattedWishlistItems,
+            pagination: {
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: totalProducts,
+            }
         });
     } catch (error) {
         console.log(error);

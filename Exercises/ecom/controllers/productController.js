@@ -6,11 +6,30 @@ const fs = require('fs')
 //GET all products controller function
 async function getProducts(req, res) {
     try {
-        const products = await Product.findAll();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+
+        const totalProducts = await Product.count();
+
+        const products = await Product.findAll({
+            limit: limit,
+            offset: offset
+        });
+
         if (products.lenth === 0) {
             return res.status(404).json({ message: "no products found" });
         }
-        return res.status(200).json({ products: products });
+
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        return res.status(200).json({ products: products,
+            pagination: {
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: totalProducts,
+            }
+         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "An error occurred while fetching the products." });
