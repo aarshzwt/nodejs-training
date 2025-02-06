@@ -52,6 +52,7 @@ async function addItemToCart(req, res) {
         if (!validProduct) {
             return res.status(404).json({ message: `no product exists with id ${product_id}, please enter valid product.` })
         }
+        //if product does not already exists in cart then compare the quantity with the stock and add it if condition satisfies 
         const existingProductInCart = await Cart.findAll({ where: { user_id: user_id, product_id: product_id } })
         if (existingProductInCart.length === 0) {
             if (validProduct.stock < quantity) {
@@ -64,6 +65,7 @@ async function addItemToCart(req, res) {
             return res.status(200).json({ message: "Product has been added to the cart", cartItem });
         }
 
+        //otherwise update the quanity of that product in cart
         let totalQuantity = 0;
         existingProductInCart.forEach(cartItem => {
             totalQuantity += cartItem.quantity;
