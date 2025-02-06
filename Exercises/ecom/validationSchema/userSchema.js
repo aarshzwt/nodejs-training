@@ -1,5 +1,11 @@
 const yup = require("yup");
 
+const userGetSchema = yup.object({
+  query: yup.object({
+    order: yup.string().oneOf(["ASC", "DESC"], 'order must be from ["ASC", "DESC"]').optional(),
+    col: yup.string().oneOf(['first_name', 'email', 'last_name', 'role', 'createdAt'], "column name must be from ['first_name', 'email', 'last_name', 'role', 'createdAt']").optional(),
+  })
+})
 
 const userCreateSchema = yup.object({
   body: yup.object({
@@ -28,4 +34,4 @@ const userUpdateSchema = yup.object({
   }),
 });
 
-module.exports = { userCreateSchema, userLoginSchema, userUpdateSchema };
+module.exports = { userGetSchema, userCreateSchema, userLoginSchema, userUpdateSchema };

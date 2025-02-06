@@ -5,11 +5,41 @@ const bcrypt = require('bcrypt')
 //GET all users controller function
 async function getUsers(req, res) {
     try {
-        const users = await User.findAll();
+        //pagination details
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const totalUsers = await User.count();
+
+        const role = req?.query.role;
+
+        //sorting based on column & order
+        const order= req?.query.order || 'ASC';
+        const col = req?.query.col || 'createdAt';
+
+        //filter with role
+        const filters= {
+            ...(role) && {role:role}
+        }
+        const users = await User.findAll({
+            where:filters,
+            limit: limit,
+            offset: offset,
+            order: [[col, order]]
+        });
         if (users.length === 0) {
             return res.status(404).json({ message: "No users found." });
         }
-        return res.status(200).json({ users: users });
+        const totalPages = Math.ceil(totalUsers / limit);
+
+        return res.status(200).json({
+            users: users,
+            pagination: {
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: totalUsers,
+            }
+        });
     } catch (error) {
         console.log(error)
         return res.status(500).json({ error: error.message });
@@ -41,12 +71,12 @@ async function updateUserProfile(req, res) {
         const id = req.id;
         const updateData = req.body;
 
-        if(updateData.length === 0){
+        if (updateData.length === 0) {
             return res.status(400).json({
                 message: "Atleast one param is required from [first_name, last_name, email, password].",
             });
         }
-        
+
         // Check if 'role' is present in the request body and return error if found
         if (updateData.role) {
             return res.status(400).json({
@@ -73,9 +103,9 @@ async function updateUserProfile(req, res) {
     } catch (error) {
         if (error.name === 'SequelizeUniqueConstraintError') {
             return res.status(400).json({
-              message: `Email address already exists. Please choose a different email.`,
+                message: `Email address already exists. Please choose a different email.`,
             });
-          }
+        }
         console.log(error);
         return res.status(500).json({ message: "An error occurred while updating the user." });
 

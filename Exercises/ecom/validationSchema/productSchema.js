@@ -1,5 +1,11 @@
 const yup = require("yup");
 
+const productGetSchema = yup.object({
+    query: yup.object({
+      order: yup.string().oneOf(["ASC", "DESC"], 'order must be from ["ASC", "DESC"]').optional(),
+      col: yup.string().oneOf(['name', 'description', 'price', 'stock', 'createdAt'], "column name must be from ['name', 'description', 'price', 'stock', 'createdAt']").optional(),
+    })
+  })
 
 const productCreateSchema = yup.object({
     body: yup.object({
@@ -26,4 +32,4 @@ const productUpdateSchema = yup.object({
     })
 });
 
-module.exports = { productCreateSchema, productUpdateSchema };
+module.exports = { productGetSchema, productCreateSchema, productUpdateSchema };

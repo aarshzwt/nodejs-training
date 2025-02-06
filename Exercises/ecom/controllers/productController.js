@@ -6,15 +6,31 @@ const fs = require('fs')
 //GET all products controller function
 async function getProducts(req, res) {
     try {
+        //pagination details
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
         const offset = (page - 1) * limit;
-
+        
         const totalProducts = await Product.count();
 
+        const { name, maxPrice, stock } = req?.query;
+
+        //sorting based on column & order
+        const order = req?.query.order || 'ASC';
+        const col = req?.query.col || 'createdAt';
+
+         //filter with name,price and stock
+         const filters = {
+            ...(name && { name: name }),
+            ...(maxPrice && { price: { [db.Sequelize.Op.lte]: parseInt(maxPrice, 10) } }), //returns products with lower or equals to price than given
+            ...(stock && { stock: { [db.Sequelize.Op.gte]: parseInt(stock, 10) } }) //returns products with higher or equals to stock than given
+        };
+
         const products = await Product.findAll({
+            where: filters,
             limit: limit,
-            offset: offset
+            offset: offset,
+            order: [[col, order]]
         });
 
         if (products.lenth === 0) {
@@ -23,13 +39,14 @@ async function getProducts(req, res) {
 
         const totalPages = Math.ceil(totalProducts / limit);
 
-        return res.status(200).json({ products: products,
+        return res.status(200).json({
+            products: products,
             pagination: {
                 currentPage: page,
                 totalPages: totalPages,
                 totalItems: totalProducts,
             }
-         });
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "An error occurred while fetching the products." });
@@ -82,13 +99,13 @@ async function updateProduct(req, res) {
             return res.status(404).json({ message: `Product doesn't exists. Please choose a valid product.` });
         }
         //stores old image path for future deletion if user updates the prouct image
-        const oldImagePath = product.image_url ? path.join(__dirname, '..','..','..', product.image_url) : null;
+        const oldImagePath = product.image_url ? path.join(__dirname, '..', '..', '..', product.image_url) : null;
 
         const { name, description, price, stock, category_id } = req?.body;
 
         const image_url = req.file ? `/uploads/image/${req.file.filename}` : null;
 
-        if( !name && !description && !price && !stock && !category_id && !image_url){
+        if (!name && !description && !price && !stock && !category_id && !image_url) {
             return res.status(400).json({ message: `Atleast one of the [ name, description, price, stock, category_id, image_url ] param is required to update.` });
         }
 
@@ -104,9 +121,9 @@ async function updateProduct(req, res) {
             {
                 where: { id },
             });
-            console.log(affectedRows);
+        console.log(affectedRows);
         if (affectedRows > 0) {
-            if (image_url && oldImagePath && oldImagePath !== path.join(__dirname, '..','..','..', image_url)) {
+            if (image_url && oldImagePath && oldImagePath !== path.join(__dirname, '..', '..', '..', image_url)) {
                 if (fs.existsSync(oldImagePath)) {
                     fs.unlinkSync(oldImagePath); // Delete the old image file
                 }
@@ -125,7 +142,7 @@ async function updateProduct(req, res) {
             if (req.file) {
                 const uploadedImagePath = path.join(__dirname, '..', '..', '..', '/uploads/image', req.file.filename);
                 if (fs.existsSync(uploadedImagePath)) {
-                    fs.unlinkSync(uploadedImagePath); 
+                    fs.unlinkSync(uploadedImagePath);
                 }
             }
             return res.status(404).json({
@@ -146,8 +163,8 @@ async function deleteProduct(req, res) {
             return res.status(404).json({ message: `No product found with id: ${id}.` })
         }
         //Product image that is to be deleted
-        const imagePath = path.join(__dirname,'..','..','..', product.image_url);
-        if(fs.existsSync(imagePath)){
+        const imagePath = path.join(__dirname, '..', '..', '..', product.image_url);
+        if (fs.existsSync(imagePath)) {
             fs.unlinkSync(imagePath);
         }
 
