@@ -1,6 +1,7 @@
 const db = require("../models")
 const { Wishlist, Product } = db
 
+//GET wishlist controller function
 async function getWishlistItems(req, res) {
     try {
         const user_id = req.id;
@@ -10,7 +11,7 @@ async function getWishlistItems(req, res) {
             include: [
                 {
                     model: Product,
-                    attributes: ['id', 'name', 'price', 'stock'],
+                    attributes: ['id', 'name', 'price', 'stock', 'category_id'],
                 },
             ],
         });
@@ -27,6 +28,8 @@ async function getWishlistItems(req, res) {
                 name: item.Product.name,
                 price: item.Product.price,
                 stock: item.Product.stock,
+                category_id: item.Product.category_id
+
             }
         }));
         return res.status(200).json({
@@ -39,6 +42,7 @@ async function getWishlistItems(req, res) {
 
 }
 
+//POST wishlist controller function
 async function addItemToWishlist(req, res) {
     try {
         const user_id = req.id;
@@ -48,6 +52,11 @@ async function addItemToWishlist(req, res) {
         if (!existingProduct) {
             return res.status(404).json({ message: `no product exists with id ${product_id}` })
         }
+        const existingProductInWishlist = await Wishlist.findOne({ where: { user_id: user_id, product_id: product_id } })
+        if (existingProductInWishlist) {
+            return res.status(400).json({ message: `product already exists in the wishlist` })
+        }
+
         const wishlistItem = await Wishlist.create({ user_id, product_id })
         return res.status(200).json({ message: "Product has been added to the Wishlist", wishlistItem: wishlistItem })
 
@@ -57,14 +66,15 @@ async function addItemToWishlist(req, res) {
     }
 }
 
+//DELETE wishlist controller function
 async function deleteWishlistItem(req, res) {
     try {
-        const id = req.params.id;
-        const wishlistItem = await Wishlist.findOne({ where: { id } });
+        const product_id = req.params.id;
+        const wishlistItem = await Wishlist.findOne({ where: { product_id } });
         if (!wishlistItem) {
-            return res.status(404).json({ message: `No wishlist item found with id: ${id}.` })
+            return res.status(404).json({ message: `No wishlist item found with product_id: ${product_id}.` })
         }
-        await Wishlist.destroy({ where: { id } });
+        await Wishlist.destroy({ where: { product_id } });
         return res.status(200).json({ message: "Wishlist Item deleted Successfully" });
     } catch (error) {
         console.log(error);

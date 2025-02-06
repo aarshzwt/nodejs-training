@@ -7,6 +7,7 @@ const { userCreateSchema, userLoginSchema } = require("../validationSchema/userS
 
 
 router.post("/register", validator(userCreateSchema), createUser);
+
 router.post("/login", validator(userLoginSchema), userLogin);
 
 

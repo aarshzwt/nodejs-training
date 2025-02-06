@@ -3,6 +3,7 @@ const { Product } = db
 const path = require('path')
 const fs = require('fs')
 
+//GET all products controller function
 async function getProducts(req, res) {
     try {
         const products = await Product.findAll();
@@ -16,6 +17,7 @@ async function getProducts(req, res) {
     }
 }
 
+//GET product by id controller function
 async function getProductById(req, res) {
     try {
         const id = req.params.id;
@@ -30,12 +32,13 @@ async function getProductById(req, res) {
     }
 }
 
-
+//POST product controller function
 async function createProduct(req, res) {
     try {
         const { name, description, price, stock, category_id } = req?.body;
         const image_url = req.file ? `/uploads/image/${req.file.filename}` : null;
 
+        //if image is uploaded then stores it's path otherwise null
         const product = image_url === null ? await Product.create({ name, description, price, stock, category_id })
             : await Product.create({ name, description, price, stock, category_id, image_url });
         return res.status(200).json({ product: product });
@@ -50,6 +53,7 @@ async function createProduct(req, res) {
     }
 }
 
+//PATCH product controller function
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
@@ -58,10 +62,17 @@ async function updateProduct(req, res) {
         if (!product) {
             return res.status(404).json({ message: `Product doesn't exists. Please choose a valid product.` });
         }
+        //stores old image path for future deletion if user updates the prouct image
         const oldImagePath = product.image_url ? path.join(__dirname, '..','..','..', product.image_url) : null;
 
         const { name, description, price, stock, category_id } = req?.body;
+
         const image_url = req.file ? `/uploads/image/${req.file.filename}` : null;
+
+        if( !name && !description && !price && !stock && !category_id && !image_url){
+            return res.status(400).json({ message: `Atleast one of the [ name, description, price, stock, category_id, image_url ] param is required to update.` });
+        }
+
         const updateData = {
             ...(name) && { name: name },
             ...(description) && { description: description },
@@ -91,7 +102,7 @@ async function updateProduct(req, res) {
         }
     } catch (error) {
         if (error.name === 'SequelizeForeignKeyConstraintError') {
-            // Delete the uploaded image if the update fails
+            // If any error occurs and updation fail, it still stores the image so this will Delete the uploaded image if the update fails
             if (req.file) {
                 const uploadedImagePath = path.join(__dirname, '..', '..', '..', '/uploads/image', req.file.filename);
                 if (fs.existsSync(uploadedImagePath)) {
@@ -107,6 +118,7 @@ async function updateProduct(req, res) {
     }
 }
 
+//DELETE product controller function
 async function deleteProduct(req, res) {
     try {
         const id = req.params.id;

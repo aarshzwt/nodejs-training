@@ -1,6 +1,7 @@
 const db = require("../models")
-const { Order, OrderItem, Product } = db
+const { Order, OrderItem, Product, Cart } = db
 
+//GET all orders controller function
 async function getAllOrders(req, res) {
     try {
         const user_id = req.id;
@@ -21,6 +22,7 @@ async function getAllOrders(req, res) {
 
 }
 
+//GET order details controller function
 async function getOrderById(req, res) {
     try {
         const id = req.params.id;
@@ -29,27 +31,69 @@ async function getOrderById(req, res) {
         if (!order) {
             return res.status(404).json({ message: `No order found with id: ${id}.` })
         }
-        return res.status(200).json({ order: order });
+        const orderDetails = await OrderItem.findAll({ where: { order_id:id } });
+
+        return res.status(200).json({ order: order, orderDetails:orderDetails });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Error fetching order", error: error })
     }
 }
 
+//Utility function for calculating Total Cart Price
+async function calculateCartTotalPrice(userCartItems) {
+    let total_price = 0;
+    const cartItemsDetails = [];
+
+    for (let cartItem of userCartItems) {
+        let quantity = cartItem.quantity;
+        let product_id = cartItem.product_id;
+        const productDetails = await Product.findOne({ where: { id: product_id } });
+        const totalPriceForProduct = quantity * productDetails.price;
+        total_price += totalPriceForProduct;
+        const updatedStock = productDetails.stock - quantity;
+        cartItemsDetails.push({ product_id, quantity, totalPriceForProduct, updatedStock });
+    }
+
+    return { total_price, cartItemsDetails };
+}
+
+//POST order controller function
 async function placeOrder(req, res) {
     try {
         const user_id = req.id;
-        const { total_price, status } = req.body;
 
-        const order = await Order.create({ user_id, total_price, status })
-        return res.status(200).json({ message: "Order placed Successfully", orderDetail: order })
+        const userCartItems = await Cart.findAll({ where: { user_id }})
+        if( userCartItems.length === 0 ){
+            return res.status(404).json({ message: `there are no items in cart to proceed with order placement.` })
+        }
+       
+        const { total_price, cartItemsDetails } = await calculateCartTotalPrice(userCartItems);
 
+        const order = await Order.create({ user_id, total_price });
+        const order_id = order.id;
+
+        let orderItems = [];
+        for (let cartItemDetail of cartItemsDetails) {
+            const { product_id, quantity, totalPriceForProduct, updatedStock } = cartItemDetail;
+             // Update the product stock
+             const product = await Product.findOne({ where: { id: product_id } });
+             product.stock = updatedStock;
+             await product.save(); 
+
+            let orderItem = await OrderItem.create({ order_id, product_id, quantity, price: totalPriceForProduct });
+            orderItems.push(orderItem);
+        }
+        await Cart.destroy({ where: {user_id} })
+
+        return res.status(200).json({ message: `order placed successfully`, order:order, orderItems :orderItems });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Error placing the order", error: error })
     }
 }
 
+//PUT order controller function for changing status
 async function updateOrder(req, res) {
     try {
         const id = req.params.id;
@@ -57,12 +101,9 @@ async function updateOrder(req, res) {
         if (!order) {
             return res.status(404).json({ message: `No order found with id: ${id}.` })
         }
-
         const status = req.body.status;
-        const [affectedRows] = await Order.update(status,
-            {
-                where: { id },
-            });
+        const [affectedRows] = await Order.update({ status }, { where: { id } });
+
         console.log(affectedRows);
         if (affectedRows > 0) {
             const updatedOrder = await Order.findOne({ where: { id } });

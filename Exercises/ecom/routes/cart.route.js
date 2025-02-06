@@ -9,7 +9,9 @@ const { cartCreateSchema } = require("../validationSchema/cartSchema");
 
 
 router.get("/",  authorizeRole(['customer']), getCartItems);
+
 router.post("/", authorizeRole(['customer']), validator(cartCreateSchema), addItemToCart);
+
 router.delete("/:id", authorizeRole(['customer']), deleteCartItem);
 
 module.exports = router;

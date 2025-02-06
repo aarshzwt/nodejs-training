@@ -31,7 +31,6 @@ module.exports = {
       },
       status: {
         type: Sequelize.ENUM('pending', 'shipped', 'delivered', 'canceled'),
-        allowNull: false,
         defaultValue: 'pending',
       },
       createdAt: {

@@ -2,6 +2,7 @@ const db = require("../models")
 const { User } = db
 const bcrypt = require('bcrypt')
 
+//GET all users controller function
 async function getUsers(req, res) {
     try {
         const users = await User.findAll();
@@ -16,6 +17,7 @@ async function getUsers(req, res) {
 
 }
 
+//get User Profile controller function
 async function getUserProfile(req, res) {
     try {
         const id = req.id;
@@ -33,6 +35,7 @@ async function getUserProfile(req, res) {
     }
 }
 
+//UPDATE user profile controller function
 async function updateUserProfile(req, res) {
     try {
         const id = req.id;
@@ -50,6 +53,7 @@ async function updateUserProfile(req, res) {
                 message: "Cannot update role.",
             });
         }
+        //if password is to be updated hash it before storing the updated password in db
         if (updateData.password) {
             updateData.password = await bcrypt.hash(updateData.password, 13);
         }
@@ -67,6 +71,11 @@ async function updateUserProfile(req, res) {
             return res.status(500).json({ message: "Error updating the user profile." });
         }
     } catch (error) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({
+              message: `Email address already exists. Please choose a different email.`,
+            });
+          }
         console.log(error);
         return res.status(500).json({ message: "An error occurred while updating the user." });
 

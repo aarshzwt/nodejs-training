@@ -1,6 +1,8 @@
 const db = require("../models")
 const { Cart, Product, Category } = db
 
+
+//GET all cart items controller function 
 async function getCartItems(req, res) {
     try {
         const user_id = req.id;
@@ -15,9 +17,8 @@ async function getCartItems(req, res) {
             ],
         });
 
-
         if (!cartItems || cartItems.length === 0) {
-            return res.status(404).json({ message: `No items found in cart for user with id: ${user_id}.` });
+            return res.status(404).json({ message: `No items found in cart for user_id: ${user_id}.` });
         }
         const formattedCartItems = cartItems.map(item => ({
             id: item.id,
@@ -41,20 +42,45 @@ async function getCartItems(req, res) {
 
 }
 
+//POST add item to cart controller function
 async function addItemToCart(req, res) {
     try {
         const user_id = req.id;
         const { product_id, quantity } = req.body;
 
-        const existingProduct = await Product.findOne({ where: { id: product_id } })
-        if (!existingProduct) {
-            return res.status(404).json({ message: `no product exists with id ${product_id}` })
+        const validProduct = await Product.findOne({ where: { id: product_id } })
+        if (!validProduct) {
+            return res.status(404).json({ message: `no product exists with id ${product_id}, please enter valid product.` })
         }
-        if(existingProduct.stock < quantity){
-            return res.status(400).json({ message: `not enough product stock available`, availableStock:  existingProduct.stock})
+        const existingProductInCart = await Cart.findAll({ where: { user_id: user_id, product_id: product_id } })
+        if (existingProductInCart.length === 0) {
+            if (validProduct.stock < quantity) {
+                return res.status(400).json({
+                    message: `Not enough product stock available.`,
+                    availableStock: validProduct.stock
+                });
+            }
+            const cartItem = await Cart.create({ user_id, product_id, quantity });
+            return res.status(200).json({ message: "Product has been added to the cart", cartItem });
         }
-        const cartItem = await Cart.create({ user_id, product_id, quantity })
-        return res.status(200).json({ message: "Product has been added to the cart", cartItem: cartItem })
+
+        let totalQuantity = 0;
+        existingProductInCart.forEach(cartItem => {
+            totalQuantity += cartItem.quantity;
+        });
+
+        if (totalQuantity + quantity > validProduct.stock) {
+            return res.status(400).json({
+                message: `Not enough product stock available.`,
+                availableStock: validProduct.stock
+            });
+        }
+        for (let cartItem of existingProductInCart) {
+            cartItem.quantity += quantity;
+            await cartItem.save();
+        }
+
+        return res.status(200).json({ message: "Product quantity updated in the cart", cartItems: existingProductInCart });
 
     } catch (error) {
         console.log(error);
@@ -62,14 +88,15 @@ async function addItemToCart(req, res) {
     }
 }
 
+//DELETE cart item controller function 
 async function deleteCartItem(req, res) {
     try {
-        const id = req.params.id;
-        const cartItem = await Cart.findOne({ where: { id } });
+        const product_id = req.params.id;
+        const cartItem = await Cart.findOne({ where: { product_id } });
         if (!cartItem) {
-            return res.status(404).json({ message: `No cart item found with id: ${id}.` })
+            return res.status(404).json({ message: `No cart item found with product_id: ${product_id}.` })
         }
-        await Cart.destroy({ where: { id } });
+        await Cart.destroy({ where: { product_id } });
         return res.status(200).json({ message: "Cart Item deleted Successfully" });
     } catch (error) {
         console.log(error);

@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-
 const { authorizeRole } = require("../middleware/authorizeRole");
 const { getUsers, getUserProfile, updateUserProfile } = require("../controllers/userController");
 const validator = require("../validators/validator");

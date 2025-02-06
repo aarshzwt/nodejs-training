@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 
+//Role based Authorization middleware function
 function authorizeRole(allowedRole) {
     return async(req, res, next) => {
         try{

@@ -13,6 +13,7 @@ router.get("/", getProducts);
 router.get("/:id", getProductById);
 
 router.post("/", imageUpload, handleMulterError, validator(productCreateSchema), authorizeRole(['admin']),  createProduct);
+
 router.patch("/:id", imageUpload, handleMulterError, validator(productUpdateSchema), authorizeRole(['admin']), updateProduct);
 
 router.delete("/:id", authorizeRole(['admin']), deleteProduct)

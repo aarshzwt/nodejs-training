@@ -6,6 +6,7 @@ const router = express.Router();
 
 
 router.get("/", getCategories);
+
 router.post("/", authorizeRole(['admin']), createCategory);
 
 

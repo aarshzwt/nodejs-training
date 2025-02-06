@@ -1,6 +1,8 @@
 const db = require("../models")
 const { Category } = db
 
+
+//GET all category controller function
 async function getCategories(req, res) {
     try {
         const categories = await Category.findAll();
@@ -15,6 +17,7 @@ async function getCategories(req, res) {
 
 }
 
+//POST category controller function
 async function createCategory(req, res) {
     try {
         const name = req.body.name;

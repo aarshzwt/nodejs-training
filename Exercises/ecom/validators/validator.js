@@ -1,6 +1,6 @@
 const validator = (schema) => async (req, res, next) => {
     try {
-        if (req.is('multipart/form-data')) { // Only run for form-data
+        if (req.is('multipart/form-data')) { // YUP only accepts json so for the form data it will convert it to json(Only run for form-data)
             req.body = {
               ...req.body,
               price: req.body.price ? parseFloat(req.body.price) : undefined,
@@ -20,7 +20,7 @@ const validator = (schema) => async (req, res, next) => {
         // Handle validation errors
         return res.status(400).json({
             type: error.name,
-            message: error.errors || error.message, // Show all validation errors if there are multiple
+            message: error.errors || error.message, 
         });
     }
 };

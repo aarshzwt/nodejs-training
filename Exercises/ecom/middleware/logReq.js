@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
+//logger middleware function
 const logReq = (req, res, next) => {
     const filePath = path.join(__dirname, "..", "requestLogs.txt");
 
