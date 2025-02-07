@@ -33,7 +33,7 @@ async function getProducts(req, res) {
             order: [[col, order]]
         });
 
-        if (products.lenth === 0) {
+        if (products.length === 0) {
             return res.status(404).json({ message: "no products found" });
         }
 
