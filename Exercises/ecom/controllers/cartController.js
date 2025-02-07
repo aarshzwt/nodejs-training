@@ -93,12 +93,12 @@ async function addItemToCart(req, res) {
 //DELETE cart item controller function 
 async function deleteCartItem(req, res) {
     try {
-        const product_id = req.params.id;
-        const cartItem = await Cart.findOne({ where: { product_id } });
+        const id = req.params.id;
+        const cartItem = await Cart.findOne({ where: { id } });
         if (!cartItem) {
-            return res.status(404).json({ message: `No cart item found with product_id: ${product_id}.` })
+            return res.status(404).json({ message: `No cart item found with id: ${id}.` })
         }
-        await Cart.destroy({ where: { product_id } });
+        await Cart.destroy({ where: { id } });
         return res.status(200).json({ message: "Cart Item deleted Successfully" });
     } catch (error) {
         console.log(error);
