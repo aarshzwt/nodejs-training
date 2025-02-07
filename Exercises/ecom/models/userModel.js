@@ -50,13 +50,15 @@ module.exports = (sequelize, DataTypes) => {
         //default scope that ignores the password col for security purpose
         defaultScope: {
             attributes: {
-                exclude: ['password']
+                exclude: ['password', 'createdAt', 'updatedAt']
             }
         },
         scopes: {
             //withPassword scope, if ever needed 
             withPassword: {
-                attributes: { include: ['password'] }, 
+                attributes: {
+                    include: ['password']
+                },
             }
         }
     });

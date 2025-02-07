@@ -34,6 +34,11 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         timestamps: true,  // Adds createdAt and updatedAt automatically
         tableName: 'order_items',
+        defaultScope: {
+            attributes: {
+                exclude: ['createdAt', 'updatedAt']
+            }
+        },
     });
 
 
