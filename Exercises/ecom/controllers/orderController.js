@@ -73,16 +73,23 @@ async function placeOrder(req, res) {
         const order = await Order.create({ user_id, total_price });
         const order_id = order.id;
 
-        let orderItems = [];
-        for (let cartItemDetail of cartItemsDetails) {
-            const { product_id, quantity, totalPriceForProduct, updatedStock } = cartItemDetail;
-             // Update the product stock
-             const product = await Product.findOne({ where: { id: product_id } });
-             product.stock = updatedStock;
-             await product.save(); 
+        const orderItems = cartItemsDetails.map(cartItem => ({
+            order_id,
+            product_id: cartItem.product_id,
+            quantity: cartItem.quantity,
+            price: cartItem.totalPriceForProduct
+        }));
 
-            let orderItem = await OrderItem.create({ order_id, product_id, quantity, price: totalPriceForProduct });
-            orderItems.push(orderItem);
+        const updatedStocks = cartItemsDetails.map(cartItem => ({
+            id: cartItem.product_id,
+            stock: cartItem.updatedStock
+        }));
+
+        await OrderItem.bulkCreate(orderItems);
+
+        // Perform bulk update for product stocks
+        for (let stock of updatedStocks) {
+            await Product.update({ stock: stock.stock }, { where: { id: stock.id } });
         }
         await Cart.destroy({ where: {user_id} })
 
