@@ -27,7 +27,7 @@ async function createCategory(req, res) {
               });
         }
         const category = await Category.create({ name });
-        return res.status(200).json({ category: category });
+        return res.status(201).json({ category: category });
     } catch (error) {
         if (error.name === 'SequelizeUniqueConstraintError') {
             return res.status(400).json({

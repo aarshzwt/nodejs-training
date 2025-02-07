@@ -84,7 +84,7 @@ async function createProduct(req, res) {
         //if image is uploaded then stores it's path otherwise null
         const productData = { name, description, price, stock, category_id, ...(image_url && { image_url }) };
         const product = await Product.create(productData);
-        return res.status(200).json({ product: product });
+        return res.status(201).json({ product: product });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "An error occurred while creating the product." });

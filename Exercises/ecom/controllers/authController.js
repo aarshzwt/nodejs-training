@@ -12,7 +12,7 @@ async function createUser(req, res) {
       const user = await User.create({ first_name,last_name, email, password, role });
       const userWithoutPassword = await User.scope('defaultScope').findByPk(user.id);
 
-      return res.status(200).json({ message: "User created successfully", data: userWithoutPassword });
+      return res.status(201).json({ message: "User created successfully", data: userWithoutPassword });
     }
     catch (error) {
       //email duplication error

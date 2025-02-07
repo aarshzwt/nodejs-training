@@ -114,7 +114,7 @@ async function updateOrder(req, res) {
         console.log(affectedRows);
         if (affectedRows > 0) {
             const updatedOrder = await Order.findOne({ where: { id } });
-            return res.status(200).json({
+            return res.status(201).json({
                 message: "Order Updated Successfully",
                 updatedOrder: updatedOrder,
             });

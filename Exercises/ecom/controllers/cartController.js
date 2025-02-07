@@ -62,7 +62,7 @@ async function addItemToCart(req, res) {
                 });
             }
             const cartItem = await Cart.create({ user_id, product_id, quantity });
-            return res.status(200).json({ message: "Product has been added to the cart", cartItem });
+            return res.status(201).json({ message: "Product has been added to the cart", cartItem });
         }
 
         //otherwise update the quanity of that product in cart
@@ -82,7 +82,7 @@ async function addItemToCart(req, res) {
             await cartItem.save();
         }
 
-        return res.status(200).json({ message: "Product quantity updated in the cart", cartItems: existingProductInCart });
+        return res.status(201).json({ message: "Product quantity updated in the cart", cartItems: existingProductInCart });
 
     } catch (error) {
         console.log(error);
