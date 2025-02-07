@@ -1,5 +1,5 @@
 const db = require("../models")
-const { Product } = db
+const { Product, Category } = db
 const path = require('path')
 const fs = require('fs')
 
@@ -10,7 +10,7 @@ async function getProducts(req, res) {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
         const offset = (page - 1) * limit;
-        
+
         const totalProducts = await Product.count();
 
         const { name, maxPrice, stock } = req?.query;
@@ -19,8 +19,8 @@ async function getProducts(req, res) {
         const order = req?.query.order || 'ASC';
         const col = req?.query.col || 'createdAt';
 
-         //filter with name,price and stock
-         const filters = {
+        //filter with name,price and stock
+        const filters = {
             ...(name && { name: name }),
             ...(maxPrice && { price: { [db.Sequelize.Op.lte]: parseInt(maxPrice, 10) } }), //returns products with lower or equals to price than given
             ...(stock && { stock: { [db.Sequelize.Op.gte]: parseInt(stock, 10) } }) //returns products with higher or equals to stock than given
@@ -72,18 +72,20 @@ async function getProductById(req, res) {
 async function createProduct(req, res) {
     try {
         const { name, description, price, stock, category_id } = req?.body;
+
         const image_url = req.file ? `/uploads/image/${req.file.filename}` : null;
 
-        //if image is uploaded then stores it's path otherwise null
-        const product = image_url === null ? await Product.create({ name, description, price, stock, category_id })
-            : await Product.create({ name, description, price, stock, category_id, image_url });
-        return res.status(200).json({ product: product });
-    } catch (error) {
-        if (error.name === 'SequelizeForeignKeyConstraintError') {
-            return res.status(400).json({
+        const validCategory = await Category.findOne({ where: { id: category_id } });
+        if (!validCategory) {
+            return res.status(404).json({
                 message: `provided Category doesn't exists. Please choose a valid category.`,
             });
         }
+        //if image is uploaded then stores it's path otherwise null
+        const productData = { name, description, price, stock, category_id, ...(image_url && { image_url }) };
+        const product = await Product.create(productData);
+        return res.status(200).json({ product: product });
+    } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "An error occurred while creating the product." });
     }
@@ -98,16 +100,30 @@ async function updateProduct(req, res) {
         if (!product) {
             return res.status(404).json({ message: `Product doesn't exists. Please choose a valid product.` });
         }
-        //stores old image path for future deletion if user updates the prouct image
-        const oldImagePath = product.image_url ? path.join(__dirname, '..', '..', '..', product.image_url) : null;
 
         const { name, description, price, stock, category_id } = req?.body;
-
         const image_url = req.file ? `/uploads/image/${req.file.filename}` : null;
 
         if (!name && !description && !price && !stock && !category_id && !image_url) {
             return res.status(400).json({ message: `Atleast one of the [ name, description, price, stock, category_id, image_url ] param is required to update.` });
         }
+        if (category_id) {
+            const validCategory = await Category.findOne({ where: { id: category_id } });
+            if (!validCategory) {
+                // If error occurs and updation fail, it still stores the image so this will Delete the uploaded image if the update fails
+                if (req.file) {
+                    const uploadedImagePath = path.join(__dirname, '..', '..', '..', '/uploads/image', req.file.filename);
+                    if (fs.existsSync(uploadedImagePath)) {
+                        fs.unlinkSync(uploadedImagePath);
+                    }
+                }
+                return res.status(404).json({
+                    message: `provided Category doesn't exists. Please choose a valid category.`,
+                });
+            }
+        }
+        //stores old image path for future deletion if user updates the prouct image
+        const oldImagePath = product.image_url ? path.join(__dirname, '..', '..', '..', product.image_url) : null;
 
         const updateData = {
             ...(name) && { name: name },
@@ -117,10 +133,7 @@ async function updateProduct(req, res) {
             ...(category_id) && { category_id: category_id },
             ...(image_url) && { image_url: image_url },
         };
-        const [affectedRows] = await Product.update(updateData,
-            {
-                where: { id },
-            });
+        const [affectedRows] = await Product.update(updateData, { where: { id } });
         console.log(affectedRows);
         if (affectedRows > 0) {
             if (image_url && oldImagePath && oldImagePath !== path.join(__dirname, '..', '..', '..', image_url)) {
@@ -137,18 +150,6 @@ async function updateProduct(req, res) {
             return res.status(500).json({ message: "Error updating the product." });
         }
     } catch (error) {
-        if (error.name === 'SequelizeForeignKeyConstraintError') {
-            // If any error occurs and updation fail, it still stores the image so this will Delete the uploaded image if the update fails
-            if (req.file) {
-                const uploadedImagePath = path.join(__dirname, '..', '..', '..', '/uploads/image', req.file.filename);
-                if (fs.existsSync(uploadedImagePath)) {
-                    fs.unlinkSync(uploadedImagePath);
-                }
-            }
-            return res.status(404).json({
-                message: `provided Category doesn't exists. Please choose a valid category.`,
-            });
-        }
         console.error(error);
         return res.status(500).json({ message: "An error occurred while updating the product." });
     }
@@ -163,9 +164,11 @@ async function deleteProduct(req, res) {
             return res.status(404).json({ message: `No product found with id: ${id}.` })
         }
         //Product image that is to be deleted
-        const imagePath = path.join(__dirname, '..', '..', '..', product.image_url);
-        if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
+        if (product.image_url) {
+            const imagePath = path.join(__dirname, '..', '..', '..', product.image_url);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
         }
 
         const deletedProduct = await Product.destroy({ where: { id } });
