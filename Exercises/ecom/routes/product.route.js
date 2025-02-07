@@ -12,9 +12,9 @@ const { productCreateSchema, productUpdateSchema, productGetSchema } = require("
 router.get("/", validator(productGetSchema), getProducts);
 router.get("/:id", getProductById);
 
-router.post("/", imageUpload, handleMulterError, validator(productCreateSchema), authorizeRole(['admin']),  createProduct);
+router.post("/", authorizeRole(['admin']), imageUpload, handleMulterError, validator(productCreateSchema), createProduct);
 
-router.patch("/:id", imageUpload, handleMulterError, validator(productUpdateSchema), authorizeRole(['admin']), updateProduct);
+router.patch("/:id", authorizeRole(['admin']), imageUpload, handleMulterError, validator(productUpdateSchema), updateProduct);
 
 router.delete("/:id", authorizeRole(['admin']), deleteProduct)
 
