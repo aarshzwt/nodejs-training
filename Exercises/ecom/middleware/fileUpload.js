@@ -39,7 +39,7 @@ const imageUpload = multer({
     storage: imageStorage,
     limits: { fileSize: 2000000 },
     fileFilter: imageFilter
-}).single("productImg");
+});
 
 
 // Error handling middleware to capture Multer errors

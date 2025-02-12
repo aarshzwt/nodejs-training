@@ -68,10 +68,25 @@ async function getProductById(req, res) {
     }
 }
 
+//GET product by category controller function
+async function getProductByCategory(req, res) {
+    try {
+        const category_id = req.params.category_id;
+        const product = await Product.findAll({ where: { category_id } });
+        if (product.length === 0) {
+            return res.status(404).json({ message: `no product found with category_id: ${category_id}` });
+        }
+        return res.status(200).json({ product: product });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "An error occurred while fetching the products." });
+    }
+}
+
 //POST product controller function
 async function createProduct(req, res) {
     try {
-        const { name, description, price, stock, category_id } = req?.body;
+        const { name, brand, description, price, stock, category_id } = req?.body;
 
         const image_url = req.file ? `/uploads/image/${req.file.filename}` : null;
 
@@ -82,7 +97,7 @@ async function createProduct(req, res) {
             });
         }
         //if image is uploaded then stores it's path otherwise null
-        const productData = { name, description, price, stock, category_id, ...(image_url && { image_url }) };
+        const productData = { name, brand, description, price, stock, category_id, ...(image_url && { image_url }) };
         const product = await Product.create(productData);
         return res.status(201).json({ product: product });
     } catch (error) {
@@ -101,11 +116,11 @@ async function updateProduct(req, res) {
             return res.status(404).json({ message: `Product doesn't exists. Please choose a valid product.` });
         }
 
-        const { name, description, price, stock, category_id } = req?.body;
+        const { name, brand, description, price, stock, category_id } = req?.body;
         const image_url = req.file ? `/uploads/image/${req.file.filename}` : null;
 
-        if (!name && !description && !price && !stock && !category_id && !image_url) {
-            return res.status(400).json({ message: `Atleast one of the [ name, description, price, stock, category_id, image_url ] param is required to update.` });
+        if (!name && !brand && !description && !price && !stock && !category_id && !image_url) {
+            return res.status(400).json({ message: `Atleast one of the [ name, brand, description, price, stock, category_id, image_url ] param is required to update.` });
         }
         if (category_id) {
             const validCategory = await Category.findOne({ where: { id: category_id } });
@@ -127,6 +142,7 @@ async function updateProduct(req, res) {
 
         const updateData = {
             ...(name) && { name: name },
+            ...(brand) && { brand: brand },
             ...(description) && { description: description },
             ...(price) && { price: price },
             ...(stock) && { stock: stock },
@@ -181,4 +197,4 @@ async function deleteProduct(req, res) {
     }
 }
 
-module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct }
+module.exports = { getProducts, getProductById, getProductByCategory, createProduct, updateProduct, deleteProduct }

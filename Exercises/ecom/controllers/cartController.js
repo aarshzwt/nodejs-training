@@ -12,7 +12,7 @@ async function getCartItems(req, res) {
             include: [
                 {
                     model: Product,
-                    attributes: ['id', 'name', 'price', 'stock', 'category_id'],
+                    attributes: ['id', 'name', 'price', 'stock', 'category_id', 'image_url', 'brand'],
                 },
             ],
         });
@@ -29,7 +29,9 @@ async function getCartItems(req, res) {
                 name: item.Product.name,
                 price: item.Product.price,
                 stock: item.Product.stock,
-                category_id: item.Product.category_id
+                category_id: item.Product.category_id,
+                image_url: item.Product.image_url,
+                brand: item.Product.brand
             }
         }));
         return res.status(200).json({
@@ -90,15 +92,45 @@ async function addItemToCart(req, res) {
     }
 }
 
+//POST add item to cart controller function
+async function removeOneQuantityCart(req, res) {
+    try {
+        const user_id = req.id;
+        const { product_id, quantity } = req.body;
+
+        const validProduct = await Product.findOne({ where: { id: product_id } })
+        if (!validProduct) {
+            return res.status(404).json({ message: `no product exists with id ${product_id}, please enter valid product.` })
+        }
+
+        const cartItem = await Cart.findOne({ where: { user_id, product_id } });
+        if (!cartItem) {
+            return res.status(404).json({ message: `No cart item found for product_id ${product_id}.` });
+        }
+        let updatedQuantity = cartItem.quantity - quantity;
+
+        if (updatedQuantity <= 0) {
+            await Cart.destroy({ where: { id: cartItem.id } });
+            return res.status(200).json({ message: "Cart item deleted successfully." });
+        }
+        await cartItem.update({ quantity: updatedQuantity });
+        return res.status(200).json({ message: "Cart item quantity updated.", cartItem });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Error deleting 1 quantiy from the cart", error: error })
+    }
+}
+
 //DELETE cart item controller function 
 async function deleteCartItem(req, res) {
     try {
-        const id = req.params.id;
-        const cartItem = await Cart.findOne({ where: { id } });
+        const product_id = req.params.id;
+        const cartItem = await Cart.findOne({ where: { product_id } });
         if (!cartItem) {
-            return res.status(404).json({ message: `No cart item found with id: ${id}.` })
+            return res.status(404).json({ message: `No cart item found with id: ${product_id}.` })
         }
-        await Cart.destroy({ where: { id } });
+        await Cart.destroy({ where: { product_id } });
         return res.status(200).json({ message: "Cart Item deleted Successfully" });
     } catch (error) {
         console.log(error);
@@ -106,4 +138,4 @@ async function deleteCartItem(req, res) {
     }
 }
 
-module.exports = { getCartItems, addItemToCart, deleteCartItem }
+module.exports = { getCartItems, addItemToCart, removeOneQuantityCart, deleteCartItem }

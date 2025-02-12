@@ -10,6 +10,7 @@ const productGetSchema = yup.object({
 const productCreateSchema = yup.object({
     body: yup.object({
         name: yup.string().required("name is required"),
+        brand: yup.string().required("brand is required"),
         description: yup.string().optional(),
         price: yup.number("price must be number").required("price is required").positive(),
         stock: yup.number("stock must be number").required("stock is required").positive(),
@@ -21,6 +22,7 @@ const productCreateSchema = yup.object({
 const productUpdateSchema = yup.object({
     body: yup.object({
         name: yup.string().optional(),
+        brand: yup.string().optional(),
         description: yup.string().optional(),
         price: yup.number("price must be number").optional().positive(),
         stock: yup.number("stock must be number").optional().positive(),

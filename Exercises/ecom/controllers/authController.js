@@ -44,8 +44,8 @@ async function createUser(req, res) {
         role: user.role
       };
       
-      const accessToken= jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-      return res.status(200).json({ message: "Login Successfull.", accessToken: accessToken, user: {
+      const token= jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+      return res.status(200).json({ message: "Login Successfull.", token: token, user: {
         id: user.id,
         role:user.role,
         first_name: user.first_name,

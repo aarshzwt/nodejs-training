@@ -27,13 +27,25 @@ async function getOrderById(req, res) {
     try {
         const id = req.params.id;
 
-        const order = await Order.findOne({ where: { id } });
+        const order = await Order.findOne({ 
+            where: { id },
+            include: [
+                {
+                    model: OrderItem, // Include the order items
+                    include: [
+                        {
+                            model: Product, // Include the related product for each order item
+                            attributes: ['id', 'name', 'price', 'image_url'], // Fetch the image_url, price, name, etc.
+                        },
+                    ],
+                },
+            ],
+        });
         if (!order) {
             return res.status(404).json({ message: `No order found with id: ${id}.` })
         }
-        const orderDetails = await OrderItem.findAll({ where: { order_id:id } });
 
-        return res.status(200).json({ order: order, orderDetails:orderDetails });
+        return res.status(200).json({ order });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Error fetching order", error: error })
@@ -77,7 +89,7 @@ async function placeOrder(req, res) {
             order_id,
             product_id: cartItem.product_id,
             quantity: cartItem.quantity,
-            price: cartItem.totalPriceForProduct
+            price: cartItem.totalPriceForProduct,
         }));
 
         const updatedStocks = cartItemsDetails.map(cartItem => ({

@@ -13,6 +13,9 @@ module.exports = (sequelize, DataTypes) => {
             unique: true,
 
         },
+        image_url: {
+            type: DataTypes.STRING(500),
+        },
     }, {
         timestamps: true,  // Adds createdAt and updatedAt automatically
         tableName: 'categories',

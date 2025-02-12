@@ -62,7 +62,9 @@ async function getWishlistItems(req, res) {
 async function addItemToWishlist(req, res) {
     try {
         const user_id = req.id;
+        console.log(user_id);
         const { product_id } = req.body;
+        console.log(product_id);
 
         const existingProduct = await Product.findOne({ where: { id: product_id } })
         if (!existingProduct) {

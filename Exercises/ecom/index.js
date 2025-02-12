@@ -13,10 +13,20 @@ const logReq = require('./middleware/logReq');
 
 const app = express()
 const port = 5000
-
+const cors = require("cors");
 app.use(express.json());
-
-// app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'uploads')));
+app.use(cors({
+    origin: 'http://localhost:3000', // Change to your frontend's URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true, // If you want to allow cookies to be sent with requests
+  }));
+  app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
+app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'uploads')));
 
 app.use(logReq);
 
