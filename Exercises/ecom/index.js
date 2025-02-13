@@ -17,7 +17,7 @@ const cors = require("cors");
 app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:3000', // Change to your frontend's URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true, // If you want to allow cookies to be sent with requests
   }));
   app.use('/uploads', (req, res, next) => {

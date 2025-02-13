@@ -1,16 +1,57 @@
 const db = require("../models")
 const { Order, OrderItem, Product, Cart } = db
 
-//GET all orders controller function
+//GET all orders of perticular user controller function
 async function getAllOrders(req, res) {
     try {
         const user_id = req.id;
 
         const orders = await Order.findAll({
-            where: { user_id }
+            where: { user_id },
+            include: [
+                {
+                    model: OrderItem, 
+                    include: [
+                        {
+                            model: Product, // Include the related product for each order item
+                            attributes: ['id', 'name', 'price', 'image_url'],
+                        },
+                    ],
+                },
+            ],
         });
         if (!orders || orders.length === 0) {
             return res.status(404).json({ message: `No orders found for user: ${user_id}.` });
+        }
+        return res.status(200).json({
+            orders: orders,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Error fetching orders", error: error })
+    }
+
+}
+
+//GET all orders controller function
+async function getAllUserOrders(req, res) {
+    try {
+
+        const orders = await Order.findAll({
+            include: [
+                {
+                    model: OrderItem, 
+                    include: [
+                        {
+                            model: Product, // Include the related product for each order item
+                            attributes: ['id', 'name', 'price', 'image_url'],
+                        },
+                    ],
+                },
+            ],
+        });
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ message: `No orders found` });
         }
         return res.status(200).json({
             orders: orders,
@@ -31,11 +72,11 @@ async function getOrderById(req, res) {
             where: { id },
             include: [
                 {
-                    model: OrderItem, // Include the order items
+                    model: OrderItem, 
                     include: [
                         {
                             model: Product, // Include the related product for each order item
-                            attributes: ['id', 'name', 'price', 'image_url'], // Fetch the image_url, price, name, etc.
+                            attributes: ['id', 'name', 'price', 'image_url'],
                         },
                     ],
                 },
@@ -141,4 +182,4 @@ async function updateOrder(req, res) {
 }
 
 
-module.exports = { getAllOrders, getOrderById, placeOrder, updateOrder }
+module.exports = { getAllOrders, getAllUserOrders, getOrderById, placeOrder, updateOrder }

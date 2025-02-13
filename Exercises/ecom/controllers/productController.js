@@ -8,7 +8,7 @@ async function getProducts(req, res) {
     try {
         //pagination details
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
+        const limit = parseInt(req.query.limit) || 15;
         const offset = (page - 1) * limit;
 
         const totalProducts = await Product.count();
@@ -88,7 +88,7 @@ async function createProduct(req, res) {
     try {
         const { name, brand, description, price, stock, category_id } = req?.body;
 
-        const image_url = req.file ? `/uploads/image/${req.file.filename}` : null;
+        const image_url = req.file ? `/uploads/image/${req.file.filename}` : " ";
 
         const validCategory = await Category.findOne({ where: { id: category_id } });
         if (!validCategory) {
@@ -188,7 +188,7 @@ async function deleteProduct(req, res) {
         }
 
         const deletedProduct = await Product.destroy({ where: { id } });
-        return res.status(200).json({ message: "User deleted Successfully" });
+        return res.status(200).json({ message: "Product deleted Successfully" });
 
     } catch (error) {
         console.log(error);

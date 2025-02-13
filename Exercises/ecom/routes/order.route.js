@@ -2,13 +2,15 @@ const express = require("express");
 const router = express.Router();
 
 const { authorizeRole } = require("../middleware/authorizeRole");
-const { getAllOrders, getOrderById, placeOrder, updateOrder } = require("../controllers/orderController");
+const { getAllOrders, getAllUserOrders, getOrderById, placeOrder, updateOrder } = require("../controllers/orderController");
 const validator = require("../validators/validator");
 const { orderUpdateSchema } = require("../validationSchema/orderSchema");
 
 
 
 router.get("/",  authorizeRole(['customer']), getAllOrders);
+router.get("/all",  authorizeRole(['admin']), getAllUserOrders);
+
 router.get("/:id",  authorizeRole(['customer']), getOrderById);
 
 router.post("/", authorizeRole(['customer']), placeOrder);
