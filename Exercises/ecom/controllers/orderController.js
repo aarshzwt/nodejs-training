@@ -21,7 +21,7 @@ async function getAllOrders(req, res) {
             ],
         });
         if (!orders || orders.length === 0) {
-            return res.status(404).json({ message: `No orders found for user: ${user_id}.` });
+            return res.status(404).json({ message: `No orders found for user: ${user_id}.`, orders:orders});
         }
         return res.status(200).json({
             orders: orders,
@@ -82,8 +82,9 @@ async function getOrderById(req, res) {
                 },
             ],
         });
+        console.log(order);
         if (!order) {
-            return res.status(404).json({ message: `No order found with id: ${id}.` })
+            return res.status(404).json({ message: `No order found with id: ${id}.`, order:order })
         }
 
         return res.status(200).json({ order });
