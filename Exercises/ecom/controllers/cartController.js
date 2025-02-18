@@ -92,7 +92,7 @@ async function addItemToCart(req, res) {
     }
 }
 
-//POST add item to cart controller function
+//POST remove one item to cart controller function
 async function removeOneQuantityCart(req, res) {
     try {
         const user_id = req.id;
