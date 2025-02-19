@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+require('dotenv').config();
 const { sequelize } = require('./models');
 const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
@@ -14,6 +15,8 @@ const logReq = require('./middleware/logReq');
 const app = express()
 const port = 5000
 const cors = require("cors");
+
+
 app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:3000', 
@@ -29,6 +32,24 @@ app.use(cors({
 app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'uploads')));
 
 app.use(logReq);
+
+
+//Inside app.js
+// app.post('/createOrder', (req, res)=>{ 
+
+//     const {amount,currency,receipt, notes}  = req.body;      
+        
+//     razorpayInstance.orders.create({amount, currency, receipt, notes}, 
+//         (err, order)=>{
+        
+//           if(!err)
+//             res.json(order)
+//           else
+//             res.send(err);
+//         }
+//     )
+// });
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
