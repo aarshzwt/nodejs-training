@@ -33,24 +33,6 @@ app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'uploads')))
 
 app.use(logReq);
 
-
-//Inside app.js
-// app.post('/createOrder', (req, res)=>{ 
-
-//     const {amount,currency,receipt, notes}  = req.body;      
-        
-//     razorpayInstance.orders.create({amount, currency, receipt, notes}, 
-//         (err, order)=>{
-        
-//           if(!err)
-//             res.json(order)
-//           else
-//             res.send(err);
-//         }
-//     )
-// });
-
-
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
