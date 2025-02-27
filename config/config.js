@@ -7,6 +7,7 @@ module.exports = {
     database: process.env.ECOM_DATABASE,
     host: process.env.MYSQL_HOST,
     dialect: 'mysql',
+    logging:false
   },
   // ecom_development: {
   //   username: process.env.DB_USERNAME,
