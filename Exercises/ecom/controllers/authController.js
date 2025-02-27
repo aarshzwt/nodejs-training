@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
-const db = require("../models")
+const db = require("../models");
+const { use } = require('../routes/auth.route');
 const { User } = db
 
 // SIGNUP controller function
@@ -48,6 +49,7 @@ async function createUser(req, res) {
       return res.status(200).json({ message: "Login Successfull.", token: token, user: {
         id: user.id,
         role:user.role,
+        email:user.email,
         first_name: user.first_name,
         last_name: user.last_name
       } })
