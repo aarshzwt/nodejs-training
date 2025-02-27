@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     /**
      * Add altering commands here.
      *
@@ -22,6 +22,9 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+      image_url: {
+        type: Sequelize.STRING(500),
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -33,7 +36,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     /**
      * Add reverting commands here.
      *

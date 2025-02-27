@@ -1,5 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
     const Payment = sequelize.define('Payment', {
+        id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            unique: true,
+            primaryKey: true,
+            autoIncrement: true,
+
+        },
         razorpay_payment_id: {
             type: DataTypes.STRING(45),
             allowNull: false,
