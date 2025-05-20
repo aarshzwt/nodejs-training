@@ -62,9 +62,7 @@ async function getWishlistItems(req, res) {
 async function addItemToWishlist(req, res) {
     try {
         const user_id = req.id;
-        console.log(user_id);
         const { product_id } = req.body;
-        console.log(product_id);
 
         const existingProduct = await Product.findOne({ where: { id: product_id } })
         if (!existingProduct) {
@@ -76,7 +74,20 @@ async function addItemToWishlist(req, res) {
         }
 
         const wishlistItem = await Wishlist.create({ user_id, product_id })
-        return res.status(200).json({ message: "Product has been added to the Wishlist", wishlistItem: wishlistItem })
+
+        const product = await Product.findOne({ where: { id: product_id } });
+        const formattedWishlistItem = {
+            id: wishlistItem.id,
+            user_id: wishlistItem.user_id,
+            product: {
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                stock: product.stock,
+                category_id: product.category_id
+            }
+        };
+        return res.status(200).json({ message: "Product has been added to the Wishlist", wishlistItem: formattedWishlistItem  })
 
     } catch (error) {
         console.log(error);

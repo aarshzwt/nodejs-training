@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+require('dotenv').config();
 const { sequelize } = require('./models');
 const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
@@ -14,11 +15,13 @@ const logReq = require('./middleware/logReq');
 const app = express()
 const port = 5000
 const cors = require("cors");
+
+
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:3000', // Change to your frontend's URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
+    credentials: true, // If you want to allow cookies to be sent with requests
   }));
   app.use('/uploads', (req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'http://localhost:3000');

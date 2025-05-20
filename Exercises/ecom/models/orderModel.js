@@ -4,8 +4,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false,
             unique: true,
-            autoIncrement: true,
             primaryKey: true,
+            autoIncrement: true,
+
         },
         user_id: {
             type: DataTypes.INTEGER,
@@ -14,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
                 model: 'users',
                 key: 'id',
             },
+        },
+        razorpay_order_id: {
+            type: DataTypes.STRING(45),
+            unique: true,
         },
        total_price: {
             type: DataTypes.DECIMAL(10,2),
@@ -27,11 +32,7 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         timestamps: true,  // Adds createdAt and updatedAt automatically
         tableName: 'orders',
-        defaultScope: {
-            attributes: {
-                exclude: ['createdAt', 'updatedAt']
-            }
-        },
+       
     });
 
 

@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     /**
      * Add altering commands here.
      *
@@ -25,6 +25,10 @@ module.exports = {
           key: 'id',
         },
       },
+      razorpay_order_id: {
+        type: DataTypes.STRING(45),
+        unique: true,
+      },
       total_price: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
@@ -44,7 +48,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     /**
      * Add reverting commands here.
      *

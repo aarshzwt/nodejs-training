@@ -9,21 +9,28 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable('categories', {
+    await queryInterface.createTable('payments', {
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
-        autoIncrement: true,
         primaryKey: true,
+        autoIncrement: true,
       },
-      name: {
-        type: Sequelize.STRING(100),
+      razorpay_payment_id: {
+        type: Sequelize.STRING(45),
         allowNull: false,
         unique: true,
+        primaryKey: true,
       },
-      image_url: {
-        type: Sequelize.STRING(500),
+      razorpay_order_id: {
+        type: Sequelize.STRING(45),
+        allowNull: false,
+        references: {
+          model: 'orders',
+          key: 'razorpay_order_id',
+        },
+        onDelete: 'CASCADE',
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -43,6 +50,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.dropTable('categories');
+    await queryInterface.dropTable('payments');
   }
 };

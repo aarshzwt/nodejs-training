@@ -9,7 +9,7 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable('categories', {
+    await queryInterface.createTable('temporaryorders', {
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -17,13 +17,21 @@ module.exports = {
         autoIncrement: true,
         primaryKey: true,
       },
-      name: {
-        type: Sequelize.STRING(100),
+      user_id: {
+        type: Sequelize.INTEGER,
         allowNull: false,
-        unique: true,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
       },
-      image_url: {
-        type: Sequelize.STRING(500),
+      razorpay_order_id: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      total_price: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: false,
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -43,6 +51,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.dropTable('categories');
+    await queryInterface.dropTable('temporaryorders');
   }
 };

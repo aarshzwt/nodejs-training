@@ -18,7 +18,7 @@ async function getCartItems(req, res) {
         });
 
         if (!cartItems || cartItems.length === 0) {
-            return res.status(404).json({ message: `No items found in cart for user_id: ${user_id}.` });
+            return res.status(404).json({ message: `No items found in cart for user_id: ${user_id}.`, cartItems: cartItems });
         }
         const formattedCartItems = cartItems.map(item => ({
             id: item.id,
@@ -92,7 +92,7 @@ async function addItemToCart(req, res) {
     }
 }
 
-//POST add item to cart controller function
+//POST remove one item to cart controller function
 async function removeOneQuantityCart(req, res) {
     try {
         const user_id = req.id;
