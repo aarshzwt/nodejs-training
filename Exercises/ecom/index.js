@@ -16,9 +16,9 @@ const port = 5000
 const cors = require("cors");
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:3000', // Change to your frontend's URL
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true, // If you want to allow cookies to be sent with requests
+    credentials: true,
   }));
   app.use('/uploads', (req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
